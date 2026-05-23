@@ -4,7 +4,12 @@
 
 ## Overview
 
-This project implements a **waypoint navigation task** for the Leatherback wheeled robot in Isaac Lab. The task trains a policy to navigate the robot through a sequence of 3D waypoints using low-level throttle and steering control.
+This project implements a highly sequential multi-object cube stacking task for the unimanual OpenArm manipulator agent in Isaac Lab. The task trains a continuous control policy to coordinate its continuous arm joints and binary gripper to build a 5-block vertical tower under strict physical stability constraints. 
+
+The policy must execute a multi-stage pick-and-place sequence across progressive operational phases:
+1. **Foundation Phase:** Reach, grasp, and position Cube 1 at the designated tabletop base coordinates (Target 1).
+2. **Sequential Assembly (Cubes 2, 3, and 4):** Dynamically transition back across the workspace to systematically retrieve, lift, transport, and center each successive cube onto the apex of the growing tower.
+3. **Apex Phase:** Retrieve Cube 5, precisely align it, and deposit it at the top of the 4-block structure to finalize the vertical column.
 
 ## Requirements
 
@@ -18,7 +23,7 @@ This project implements a **waypoint navigation task** for the Leatherback wheel
 2. Install the extension in editable mode:
 
     ```bash
-    python -m pip install -e source/leatherbacknav
+     python -m pip install -e source/openarmstacking
     ```
 
 3. Verify installation:
@@ -32,19 +37,19 @@ This project implements a **waypoint navigation task** for the Leatherback wheel
 ### Training
 
 ```bash
-python scripts/rsl_rl/train.py --task=Nepher-Leatherback-WaypointNav-v0
+python scripts/rsl_rl/train.py --task=Nepher-OpenArm-CubeStack-v0
 ```
 
 ### Playing/Testing
 
 ```bash
-python scripts/rsl_rl/play.py --task=Nepher-Leatherback-WaypointNav-Play-v0 --checkpoint=/path/to/checkpoint.pt
+python scripts/rsl_rl/play.py --task=Nepher-OpenArm-CubeStack-Play-v0 --checkpoint=/path/to/checkpoint.pt
 ```
 
 ### Testing with Random Actions
 
 ```bash
-python scripts/random_agent.py --task=Nepher-Leatherback-WaypointNav-v0
+python scripts/random_agent.py --task=Nepher-OpenArm-CubeStack-v0
 ```
 
 ## envhub (nepher) Integration
