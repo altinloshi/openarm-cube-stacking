@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openarm-cube-stacking"
+version = "0.1.0"
+description = "Isaac Lab external manager-based RL task: 5-cube sequential stacking with the OpenArm robot."
+readme = "README.md"
+license = { text = "BSD-3-Clause" }
+authors = [{ name = "Nepher AI", email = "contact@nepher.ai" }]
+requires-python = ">=3.10"
+keywords = ["isaaclab", "isaac-lab", "openarm", "robotics", "manipulation", "rl"]
+classifiers = [
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+]
+
+# This top-level project intentionally has no installable Python package.
+# The actual extension lives in `source/openarm_cube_stacking/` and should be
+# installed in editable mode:
+#
+#   python -m pip install -e source/openarm_cube_stacking
+#
+# The scripts under `scripts/` are entry points and are expected to be run
+# directly with `python scripts/<name>.py`.
+
+[tool.setuptools]
+packages = []
