@@ -1,94 +1,79 @@
-# OpenArm Cube Stacking Task
+# OpenArm Cube Stacking for Isaac Lab
 
-**Developed by Nepher AI — contact@nepher.ai**
+Developed by Altin Loshi — <your-email>
 
 ## Overview
 
-This project implements a highly sequential multi-object cube stacking task for the unimanual OpenArm manipulator agent in Isaac Lab. The task trains a continuous control policy to coordinate its continuous arm joints and binary gripper to build a 5-block vertical tower under strict physical stability constraints. 
-
-The policy must execute a multi-stage pick-and-place sequence across progressive operational phases:
-1. **Foundation Phase:** Reach, grasp, and position Cube 1 at the designated tabletop base coordinates (Target 1).
-2. **Sequential Assembly (Cubes 2, 3, and 4):** Dynamically transition back across the workspace to systematically retrieve, lift, transport, and center each successive cube onto the apex of the growing tower.
-3. **Apex Phase:** Retrieve Cube 5, precisely align it, and deposit it at the top of the 4-block structure to finalize the vertical column.
+This project implements a cube stacking task for the OpenArm robot in Isaac Lab. The task trains a policy to stack five cubes on top of each other using continuous arm control and binary gripper control.
 
 ## Requirements
 
-- **Isaac Lab**: 2.3.0
-- **Isaac Sim**: 5.1
+  * Isaac Lab: 2.3.0
+  * Isaac Sim: 5.1
 
 ## Installation
 
-1. Install Isaac Lab following the [installation guide](https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/index.html).
+  1. Install Isaac Lab following the installation guide.
 
-2. Install the extension in editable mode:
+  2. Install the extension in editable mode:
 
-    ```bash
-     python -m pip install -e source/openarmstacking
-    ```
+        python -m pip install -e source/openarm_cube_stacking
 
-3. Verify installation:
+  3. Verify installation:
 
-    ```bash
-    python scripts/list_envs.py
-    ```
+        python scripts/list_envs.py
 
 ## Usage
 
 ### Training
 
-```bash
-python scripts/rsl_rl/train.py --task=Nepher-OpenArm-CubeStack-v0
-```
+    python scripts/rsl_rl/train.py --task=Altin-OpenArm-CubeStack-v0
 
 ### Playing/Testing
 
-```bash
-python scripts/rsl_rl/play.py --task=Nepher-OpenArm-CubeStack-Play-v0 --checkpoint=/path/to/checkpoint.pt
-```
+    python scripts/rsl_rl/play.py --task=Altin-OpenArm-CubeStack-Play-v0 --checkpoint=/path/to/checkpoint.pt
 
 ### Testing with Random Actions
 
-```bash
-python scripts/random_agent.py --task=Nepher-OpenArm-CubeStack-v0
-```
+    python scripts/random_agent.py --task=Altin-OpenArm-CubeStack-v0
 
-## envhub (nepher) Integration
+## OpenArm Cube Stacking Integration
 
-This project integrates with the [envhub](../../envhub/) (nepher) framework, providing standardized navigation environments with predefined terrains, obstacles, and waypoint configurations.
+This project integrates with the OpenArm cube stacking task, providing a manipulation environment where the robot must pick, move, and stack five cubes on a table.
 
 ### Usage
 
-**Training:**
-```bash
-python scripts/rsl_rl/train.py --task=Nepher-Leatherback-WaypointNav-Envhub-v0
-```
+Training:
 
-**Playing/Testing:**
-```bash
-python scripts/rsl_rl/play.py --task=Nepher-Leatherback-WaypointNav-Envhub-Play-v0 --checkpoint=/path/to/checkpoint.pt
-```
+    python scripts/rsl_rl/train.py --task=Altin-OpenArm-CubeStack-v0
 
-**Customizing scenes:**
-```python
-from leatherbacknav.tasks.manager_based.waypoint_nav.waypoint_nav_env_cfg_envhub import WaypointNavEnvCfg_Envhub
+Playing/Testing:
 
-cfg = WaypointNavEnvCfg_Envhub(scene_id=1)  # Use scene 1
-env = gym.make("Nepher-Leatherback-WaypointNav-Envhub-v0", cfg=cfg)
-```
+    python scripts/rsl_rl/play.py --task=Altin-OpenArm-CubeStack-Play-v0 --checkpoint=/path/to/checkpoint.pt
+
+Customizing scenes:
+
+    from openarm_cube_stacking.tasks.manager_based.cube_stack.cube_stack_env_cfg import CubeStackEnvCfg
+    cfg = CubeStackEnvCfg(num_cubes=5)
+    env = gym.make("Altin-OpenArm-CubeStack-v0", cfg=cfg)
 
 ## Environment Details
 
-The Leatherback is a 4-wheeled rover-style robot with:
-- **Throttle control**: Velocity control for all 4 wheels
-- **Steering control**: Position control for front wheel knuckles (Ackermann-style steering)
+The OpenArm environment contains a robot arm, a table, and five cubes.
 
-The action space is 2D: `[throttle, steering]`
+The robot uses:
 
-See the configuration files in `source/leatherbacknav/leatherbacknav/tasks/manager_based/waypoint_nav/` for full details including observations, actions, rewards, and termination conditions.
+  * Arm control: Continuous control for reaching, lifting, moving, and placing cubes
+  * Gripper control: Binary control for opening and closing the gripper
+
+The action space is composed of arm control and gripper control: `[arm_command, gripper_command]`
+
+The goal of the task is to stack all five cubes vertically on the table. The first cube is placed at the target position, and the remaining cubes are placed one by one on top of it. The final stack must remain stable and upright.
+
+See the configuration files in `source/openarm_cube_stacking/openarm_cube_stacking/tasks/manager_based/cube_stack/` for full details including observations, actions, rewards, and termination conditions.
 
 ## License
 
-This project is licensed under the **BSD-3-Clause License**. See [LICENSE](LICENSE) for details.
+This project is licensed under the BSD-3-Clause License. See `LICENSE` for details.
 
-Copyright (c) 2025-2026, Nepher AI.
-
+Copyright (c) 2025-2026, Altin Loshi.
