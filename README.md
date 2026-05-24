@@ -27,15 +27,15 @@ This project implements a cube stacking task for the OpenArm robot in Isaac Lab.
 
 ### Training
 
-    python scripts/rsl_rl/train.py --task=Altin-OpenArm-CubeStack-v0
+    python scripts/rsl_rl/train.py --task=Nepher-OpenArm-CubeStack-v0
 
 ### Playing/Testing
 
-    python scripts/rsl_rl/play.py --task=Altin-OpenArm-CubeStack-Play-v0 --checkpoint=/path/to/checkpoint.pt
+    python scripts/rsl_rl/play.py --task=Nepher-OpenArm-CubeStack-Play-v0 --checkpoint=/path/to/checkpoint.pt
 
 ### Testing with Random Actions
 
-    python scripts/random_agent.py --task=Altin-OpenArm-CubeStack-v0
+    python scripts/random_agent.py --task=Nepher-OpenArm-CubeStack-v0
 
 ## OpenArm Cube Stacking Integration
 
