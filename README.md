@@ -1,79 +1,96 @@
-# OpenArm Cube Stacking for Isaac Lab
+# Nepher OpenArm Cube Stacking
 
-Developed by Nepher AI — contact@nepher.ai
+Manager-based Isaac Lab external task project for the OpenArm robot to pick and stack five cubes.
 
-## Overview
+## Project Overview
 
-This project implements a cube stacking task for the OpenArm robot in Isaac Lab. The task trains a policy to stack five cubes on top of each other using continuous arm control and binary gripper control.
+This repository provides an external Isaac Lab task package named `openarm_cube_stacking` with the
+manager-based RL environment IDs:
+
+- `Nepher-OpenArm-CubeStack-v0`
+- `Nepher-OpenArm-CubeStack-Play-v0`
+
+The task uses OpenArm joint-position control for the arm and binary open/close control for the
+gripper. The first version is intentionally a clean scaffold: it contains the full package layout,
+task registration, observation/reward/termination helpers, reset events, RSL-RL PPO config, and
+generic train/play/random/zero/list scripts. For best learning performance, a curriculum is still
+recommended: start with 1 cube, then 2 cubes, then scale to the full 5-cube stack.
 
 ## Requirements
 
-  * Isaac Lab: 2.3.0
-  * Isaac Sim: 5.1
+- Isaac Lab with the `isaaclab`, `isaaclab_assets`, `isaaclab_tasks`, and `isaaclab_rl` Python packages
+- Isaac Sim compatible with your Isaac Lab version
+- Python 3.10+
 
 ## Installation
 
-  1. Install Isaac Lab following the [installation guide](https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/index.html).
+1. Install Isaac Lab by following the official setup guide:
+   https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/index.html
+2. Install this external task package in editable mode:
 
-  2. Install the extension in editable mode:
+   ```bash
+   python -m pip install -e source/openarm_cube_stacking
+   ```
 
-        python -m pip install -e source/openarm_cube_stacking
+3. Verify that task registration works:
 
-  3. Verify installation:
-
-        python scripts/list_envs.py
+   ```bash
+   python scripts/list_envs.py
+   ```
 
 ## Usage
 
-### Training
+### List registered environments
 
-    python scripts/rsl_rl/train.py --task=Nepher-OpenArm-CubeStack-v0
+```bash
+python scripts/list_envs.py
+```
 
-### Playing/Testing
+### Run a random policy
 
-    python scripts/rsl_rl/play.py --task=Nepher-OpenArm-CubeStack-Play-v0 --checkpoint=/path/to/checkpoint.pt
+```bash
+python scripts/random_agent.py --task=Nepher-OpenArm-CubeStack-v0 --num_envs=4
+```
 
-### Testing with Random Actions
+### Run zero actions
 
-    python scripts/random_agent.py --task=Nepher-OpenArm-CubeStack-v0
+```bash
+python scripts/zero_agent.py --task=Nepher-OpenArm-CubeStack-v0 --num_envs=4
+```
 
-## OpenArm Cube Stacking Integration
+### Train with RSL-RL PPO
 
-This project integrates with the OpenArm cube stacking task, providing a manipulation environment where the robot must pick, move, and stack five cubes on a table.
+```bash
+python scripts/rsl_rl/train.py --task=Nepher-OpenArm-CubeStack-v0 --headless
+```
 
-### Usage
+### Play a trained checkpoint
 
-Training:
+```bash
+python scripts/rsl_rl/play.py --task=Nepher-OpenArm-CubeStack-Play-v0 --checkpoint=/path/to/model.pt
+```
 
-    python scripts/rsl_rl/train.py --task=Nepher-OpenArm-CubeStack-v0
+## Environment Notes
 
-Playing/Testing:
+- The environment is built with `ManagerBasedRLEnv` / `ManagerBasedRLEnvCfg`.
+- OpenArm is configured from `isaaclab_assets.robots.openarm.OPENARM_UNI_CFG`.
+- Five cubes are spawned on a tabletop with non-overlapping initial placements.
+- Sequential task logic is handled through vectorized MDP helpers that treat the current cube as the
+  first cube not yet placed at its target stack position.
+- Rewards cover reaching, lifting, moving toward the stack target, placing, successful completion,
+  and basic penalties for excessive action, joint motion, drops, and stack collapse.
 
-    python scripts/rsl_rl/play.py --task=Nepher-OpenArm-CubeStack-Play-v0 --checkpoint=/path/to/checkpoint.pt
+## Current Scaffold / Recommended Next Steps
 
-Customizing scenes:
+This repository is set up as a strong first version, but the following improvements are still
+recommended for better training stability and final performance:
 
-    from openarm_cube_stacking.tasks.manager_based.cube_stack.cube_stack_env_cfg import CubeStackEnvCfg
-    cfg = CubeStackEnvCfg(num_cubes=5)
-    env = gym.make("Nepher-OpenArm-CubeStack-v0", cfg=cfg)
-
-## Environment Details
-
-The OpenArm environment contains a robot arm, a table, and five cubes.
-
-The robot uses:
-
-  * Arm control: Continuous control for reaching, lifting, moving, and placing cubes
-  * Gripper control: Binary control for opening and closing the gripper
-
-The action space is composed of arm control and gripper control: `[arm_command, gripper_command]`
-
-The goal of the task is to stack all five cubes vertically on the table. The first cube is placed at the target position, and the remaining cubes are placed one by one on top of it. The final stack must remain stable and upright.
-
-See the configuration files in `source/openarm_cube_stacking/openarm_cube_stacking/tasks/manager_based/cube_stack/` for full details including observations, actions, rewards, and termination conditions.
+- curriculum variants for 1-cube and 2-cube stacking before 5-cube training
+- stronger placement/orientation shaping
+- richer reset randomization
+- additional stack-stability checks and contact-aware rewards
+- tuned PPO hyperparameters after initial rollout testing
 
 ## License
 
 This project is licensed under the BSD-3-Clause License. See `LICENSE` for details.
-
-Copyright (c) 2025-2026, Nepher AI.

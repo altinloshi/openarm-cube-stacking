@@ -1,15 +1,12 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
+
 
 setup(
-    name="openarm_stacking",
+    name="openarm-cube-stacking",
     version="0.1.0",
-    author="altinloshi",
-    description="Autonomous unimanual OpenArm agent for sequential multi-object cube stacking in Isaac Lab.",
-    packages=find_packages(),
+    description="Manager-based Isaac Lab external task for OpenArm five-cube stacking.",
+    package_dir={"": "source/openarm_cube_stacking"},
+    packages=find_packages(where="source/openarm_cube_stacking"),
     include_package_data=True,
     python_requires=">=3.10",
-    install_requires=[
-        "torch",
-        "numpy",
-    ],
 )
