@@ -1,76 +1,145 @@
 # OpenArm Cube Stacking for Isaac Lab
 
-Developed by Nepher AI — contact@nepher.ai
+Developed by Nepher AI - contact@nepher.ai
 
 ## Overview
 
-This project implements a cube stacking task for the OpenArm robot in Isaac Lab. The task trains a policy to stack five cubes on top of each other using continuous arm control and binary gripper control.
+This repository is an Isaac Lab external task project for the manager-based RL task:
+
+```text
+Nepher-OpenArm-CubeStack-v0
+```
+
+The task uses `OPENARM_UNI_CFG` from `isaaclab_assets.robots.openarm` and trains OpenArm to pick and stack five cubes on a table. The implementation follows the Isaac Lab external-task layout with generic scripts, Gymnasium registration, manager-based environment configuration, MDP helper modules, and an RSL-RL PPO runner config.
+
+The play variant is registered as:
+
+```text
+Nepher-OpenArm-CubeStack-Play-v0
+```
 
 ## Requirements
 
-  * Isaac Lab: 2.3.0
-  * Isaac Sim: 5.1
+- Isaac Lab with the new `isaaclab`, `isaaclab_assets`, `isaaclab_tasks`, and `isaaclab_rl` namespaces
+- Isaac Sim compatible with your Isaac Lab version
+- Python 3.10+
 
 ## Installation
 
-  1. Install Isaac Lab following the [installation guide](https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/index.html).
+Install Isaac Lab first, then install this external task package in editable mode:
 
-  2. Install the extension in editable mode:
+```bash
+python -m pip install -e source/openarm_cube_stacking
+```
 
-        python -m pip install -e source/openarm_cube_stacking
+You can also install from the repository root:
 
-  3. Verify installation:
+```bash
+python -m pip install -e .
+```
 
-        python scripts/list_envs.py
+## Verify environment registration
 
-## Usage
+```bash
+python scripts/list_envs.py
+```
 
-### Training
+You should see:
 
-    python scripts/rsl_rl/train.py --task=Nepher-OpenArm-CubeStack-v0
+```text
+Nepher-OpenArm-CubeStack-v0
+Nepher-OpenArm-CubeStack-Play-v0
+```
 
-### Playing/Testing
+## Run agents
 
-    python scripts/rsl_rl/play.py --task=Nepher-OpenArm-CubeStack-Play-v0 --checkpoint=/path/to/checkpoint.pt
+Random actions:
 
-### Testing with Random Actions
+```bash
+python scripts/random_agent.py --task=Nepher-OpenArm-CubeStack-v0 --num_envs=4
+```
 
-    python scripts/random_agent.py --task=Nepher-OpenArm-CubeStack-v0
+Zero actions:
 
-## OpenArm Cube Stacking Integration
+```bash
+python scripts/zero_agent.py --task=Nepher-OpenArm-CubeStack-v0 --num_envs=4
+```
 
-This project integrates with the OpenArm cube stacking task, providing a manipulation environment where the robot must pick, move, and stack five cubes on a table.
+## Train with RSL-RL
 
-### Usage
+```bash
+python scripts/rsl_rl/train.py --task=Nepher-OpenArm-CubeStack-v0 --headless
+```
 
-Training:
+Useful overrides:
 
-    python scripts/rsl_rl/train.py --task=Nepher-OpenArm-CubeStack-v0
+```bash
+python scripts/rsl_rl/train.py --task=Nepher-OpenArm-CubeStack-v0 --headless --num_envs=1024 --max_iterations=5000
+```
 
-Playing/Testing:
+## Play a checkpoint
 
-    python scripts/rsl_rl/play.py --task=Nepher-OpenArm-CubeStack-Play-v0 --checkpoint=/path/to/checkpoint.pt
+```bash
+python scripts/rsl_rl/play.py --task=Nepher-OpenArm-CubeStack-Play-v0 --checkpoint=/path/to/model.pt
+```
 
-Customizing scenes:
+## Project layout
 
-    from openarm_cube_stacking.tasks.manager_based.cube_stack.cube_stack_env_cfg import CubeStackEnvCfg
-    cfg = CubeStackEnvCfg(num_cubes=5)
-    env = gym.make("Nepher-OpenArm-CubeStack-v0", cfg=cfg)
+```text
+scripts/
+  list_envs.py
+  random_agent.py
+  zero_agent.py
+  rsl_rl/
+    train.py
+    play.py
+    cli_args.py
 
-## Environment Details
+source/openarm_cube_stacking/
+  setup.py
+  openarm_cube_stacking/
+    tasks/manager_based/cube_stack/
+      cube_stack_env_cfg.py
+      cube_stack_env_cfg_play.py
+      mdp/
+        observations.py
+        rewards.py
+        terminations.py
+        events.py
+      agents/
+        rsl_rl_ppo_cfg.py
+```
 
-The OpenArm environment contains a robot arm, a table, and five cubes.
+## Task details
 
-The robot uses:
+The manager-based environment config defines:
 
-  * Arm control: Continuous control for reaching, lifting, moving, and placing cubes
-  * Gripper control: Binary control for opening and closing the gripper
+- OpenArm joint position control for `openarm_joint.*`
+- Binary gripper control for `openarm_finger_joint.*`
+- Five rigid cubes with `{ENV_REGEX_NS}` prim paths
+- A table, ground plane, lighting, and end-effector frame transformer
+- Observations for robot state, last action, end-effector pose, cube poses, current cube index, target stack position, and task vectors
+- Reward terms for reaching, lifting, moving to target, placing, full stack success, action penalties, joint velocity penalties, drops, and collapse
+- Terminations for timeout, all cubes stacked, cube dropped, and stack collapse
+- Reset events for robot joints, cube spawn positions, and stack target position
 
-The action space is composed of arm control and gripper control: `[arm_command, gripper_command]`
+The sequential stacking logic computes the current cube as the first cube not yet placed at its target. Target centers are:
 
-The goal of the task is to stack all five cubes vertically on the table. The first cube is placed at the target position, and the remaining cubes are placed one by one on top of it. The final stack must remain stable and upright.
+```text
+stack_base + [0, 0, i * cube_size]
+```
 
-See the configuration files in `source/openarm_cube_stacking/openarm_cube_stacking/tasks/manager_based/cube_stack/` for full details including observations, actions, rewards, and termination conditions.
+where cube 0 is centered at tabletop height plus half a cube.
+
+## Scaffold notes
+
+This is a clean runnable scaffold for the full five-cube task. The reward and termination logic is vectorized and structured for training, but five-cube stacking is difficult as a first curriculum. Recommended next steps:
+
+1. Train a one-cube placement curriculum.
+2. Extend to two cubes with stronger stability/collapse rewards.
+3. Increase to all five cubes once grasping and placement are reliable.
+
+Future improvements can add richer phase-aware rewards, contact-aware grasp detection, domain randomization, curriculum switches, and more robust stack stability metrics.
 
 ## License
 
