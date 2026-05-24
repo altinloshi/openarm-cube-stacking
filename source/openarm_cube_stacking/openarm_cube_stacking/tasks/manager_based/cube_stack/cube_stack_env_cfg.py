@@ -11,12 +11,11 @@ from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
+from isaaclab.markers.config import FRAME_MARKER_CFG
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sensors import FrameTransformerCfg
 from isaaclab.utils import configclass
 from isaaclab_assets.robots.openarm import OPENARM_UNI_CFG
-
-from isaaclab.markers.config import FRAME_MARKER_CFG
 
 from . import mdp
 
@@ -43,6 +42,23 @@ def _cube_cfg(name: str, color: tuple[float, float, float], position: tuple[floa
             collision_props=sim_utils.CollisionPropertiesCfg(),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=color, metallic=0.1),
         ),
+    )
+
+
+def _ee_frame_cfg() -> FrameTransformerCfg:
+    marker_cfg = FRAME_MARKER_CFG.copy()
+    marker_cfg.markers["frame"].scale = (0.08, 0.08, 0.08)
+    marker_cfg.prim_path = "/Visuals/FrameTransformer"
+    return FrameTransformerCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/openarm_link0",
+        debug_vis=False,
+        visualizer_cfg=marker_cfg,
+        target_frames=[
+            FrameTransformerCfg.FrameCfg(
+                prim_path="{ENV_REGEX_NS}/Robot/openarm_ee_tcp",
+                name="end_effector",
+            ),
+        ],
     )
 
 
@@ -79,20 +95,7 @@ class OpenArmCubeStackSceneCfg(InteractiveSceneCfg):
     cube_3 = _cube_cfg("Cube_3", (0.85, 0.65, 0.10), (0.64, 0.02, TABLE_TOP_Z + 0.5 * CUBE_SIZE))
     cube_4 = _cube_cfg("Cube_4", (0.75, 0.20, 0.75), (0.68, -0.12, TABLE_TOP_Z + 0.5 * CUBE_SIZE))
 
-    marker_cfg = FRAME_MARKER_CFG.copy()
-    marker_cfg.markers["frame"].scale = (0.08, 0.08, 0.08)
-    marker_cfg.prim_path = "/Visuals/FrameTransformer"
-    ee_frame = FrameTransformerCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/openarm_link0",
-        debug_vis=False,
-        visualizer_cfg=marker_cfg,
-        target_frames=[
-            FrameTransformerCfg.FrameCfg(
-                prim_path="{ENV_REGEX_NS}/Robot/openarm_ee_tcp",
-                name="end_effector",
-            ),
-        ],
-    )
+    ee_frame = _ee_frame_cfg()
 
 
 @configclass

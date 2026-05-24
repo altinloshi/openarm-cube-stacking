@@ -78,7 +78,6 @@ def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg: RslRlBaseRunnerCfg) -> None:
         agent_cfg.device = args_cli.device
 
     env_cfg.seed = agent_cfg.seed
-    train_task_name = args_cli.task.replace("-Play", "")
     log_root = os.path.abspath(os.path.join("logs", "rsl_rl", agent_cfg.experiment_name))
 
     if args_cli.checkpoint:
@@ -103,7 +102,6 @@ def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg: RslRlBaseRunnerCfg) -> None:
     runner.load(checkpoint_path)
     policy = runner.get_inference_policy(device=env.unwrapped.device)
 
-    _ = train_task_name  # keeps the train/play task relationship explicit in the script
     obs = env.get_observations()
     timestep = 0
     step_dt = env.unwrapped.step_dt
@@ -113,7 +111,8 @@ def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg: RslRlBaseRunnerCfg) -> None:
         with torch.inference_mode():
             actions = policy(obs)
             obs, _, dones, _ = env.step(actions)
-            policy.reset(dones)
+            if hasattr(policy, "reset"):
+                policy.reset(dones)
 
         timestep += 1
         if args_cli.video and timestep >= args_cli.video_length:
