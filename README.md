@@ -13,7 +13,7 @@ This project implements a cube stacking task for the OpenArm robot in Isaac Lab.
 
 ## Installation
 
-  1. Install Isaac Lab following the installation guide.
+  1. Install Isaac Lab following the [installation guide](https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/index.html).
 
   2. Install the extension in editable mode:
 
