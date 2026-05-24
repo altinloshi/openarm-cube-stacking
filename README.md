@@ -1,6 +1,6 @@
 # OpenArm Cube Stacking for Isaac Lab
 
-Developed by Altin Loshi — <your-email>
+Developed by Nepher AI — contact@nepher.ai
 
 ## Overview
 
@@ -45,17 +45,17 @@ This project integrates with the OpenArm cube stacking task, providing a manipul
 
 Training:
 
-    python scripts/rsl_rl/train.py --task=Altin-OpenArm-CubeStack-v0
+    python scripts/rsl_rl/train.py --task=Nepher-OpenArm-CubeStack-v0
 
 Playing/Testing:
 
-    python scripts/rsl_rl/play.py --task=Altin-OpenArm-CubeStack-Play-v0 --checkpoint=/path/to/checkpoint.pt
+    python scripts/rsl_rl/play.py --task=Nepher-OpenArm-CubeStack-Play-v0 --checkpoint=/path/to/checkpoint.pt
 
 Customizing scenes:
 
     from openarm_cube_stacking.tasks.manager_based.cube_stack.cube_stack_env_cfg import CubeStackEnvCfg
     cfg = CubeStackEnvCfg(num_cubes=5)
-    env = gym.make("Altin-OpenArm-CubeStack-v0", cfg=cfg)
+    env = gym.make("Nepher-OpenArm-CubeStack-v0", cfg=cfg)
 
 ## Environment Details
 
@@ -76,4 +76,4 @@ See the configuration files in `source/openarm_cube_stacking/openarm_cube_stacki
 
 This project is licensed under the BSD-3-Clause License. See `LICENSE` for details.
 
-Copyright (c) 2025-2026, Altin Loshi.
+Copyright (c) 2025-2026, Nepher AI.
