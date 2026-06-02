@@ -69,7 +69,7 @@ class OpenArmCubeStackSceneCfg(InteractiveSceneCfg):
 
     table = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/Table",
-        init_state=AssetBaseCfg.InitialStateCfg(pos=(0.5, 0.0, TABLE_HEIGHT / 2.0)),
+        init_state=AssetBaseCfg.InitialStateCfg(pos=(0.55, 0.0, TABLE_HEIGHT / 2.0)),
         spawn=sim_utils.CuboidCfg(
             size=(0.85, 0.70, TABLE_HEIGHT),
             collision_props=sim_utils.CollisionPropertiesCfg(),
