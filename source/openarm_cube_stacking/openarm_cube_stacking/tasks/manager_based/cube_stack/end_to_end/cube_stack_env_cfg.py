@@ -1,7 +1,7 @@
 """End-to-end environment config for Nepher-OpenArm-CubeStack-EndToEnd-v0.
 
-This is the same floor-mounted baseline as the top-level cube_stack task,
-exposed under the end_to_end sub-package name.
+This is the same lift-style baseline as the top-level cube_stack task, exposed
+under the end_to_end sub-package name.
 """
 
 from isaaclab.utils import configclass

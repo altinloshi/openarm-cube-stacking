@@ -1,7 +1,7 @@
 """30 deterministic evaluation scenarios for tournament scoring.
 
 Each scenario fixes:
-- Five cube initial positions on the table (local env frame)
+- Five cube initial positions near the official OpenArm lift-cube spawn area (local env frame)
 - Stack base XY target position (local env frame)
 - Optional per-cube yaw offset
 
@@ -10,8 +10,8 @@ Scenarios are indexed 0–29.  Environment i uses scenario ``i % 30``.
 Layout conventions
 ------------------
 All positions are in the LOCAL env frame (env origins are added at runtime).
-Cubes rest on the table: z = TABLE_TOP_Z + CUBE_SIZE / 2.0 = 0.225 m.
-Stack base z = 0.225 m (bottom cube centre on table top).
+Cubes use the official OpenArm lift DexCube centre height: z = 0.055 m.
+Stack base z = 0.055 m (bottom cube centre at the lift-object level).
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ import torch
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
 
-from ..tabletop_scene_cfg import CUBE_SIZE, CUBE_TABLE_Z, CUBE_NAMES, TABLE_TOP_Z
+from ..openarm_lift_style_scene_cfg import CUBE_TABLE_Z, CUBE_NAMES
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Scenario definition type
@@ -35,7 +35,7 @@ from ..tabletop_scene_cfg import CUBE_SIZE, CUBE_TABLE_Z, CUBE_NAMES, TABLE_TOP_
 #   "stack":  (x, y, z) stack base position in local frame
 #   "yaws":   list of 5 yaw angles in radians (optional, 0 = upright)
 
-_Z = CUBE_TABLE_Z  # 0.225
+_Z = CUBE_TABLE_Z  # 0.055
 
 
 def _mk_scenario(
@@ -58,73 +58,73 @@ def _mk_scenario(
 
 EVAL_SCENARIOS: list[dict] = [
     # ── Baseline row layout, various stack positions ──────────────────────────
-    _mk_scenario([0.75]*5, [-0.18, -0.09, 0.0, 0.09, 0.18], 0.85, 0.0),
-    _mk_scenario([0.75]*5, [-0.18, -0.09, 0.0, 0.09, 0.18], 0.85, 0.10),
-    _mk_scenario([0.75]*5, [-0.18, -0.09, 0.0, 0.09, 0.18], 0.85, -0.10),
-    _mk_scenario([0.75]*5, [-0.18, -0.09, 0.0, 0.09, 0.18], 0.80, 0.15),
-    _mk_scenario([0.75]*5, [-0.18, -0.09, 0.0, 0.09, 0.18], 0.80, -0.15),
+    _mk_scenario([0.35, 0.35, 0.40, 0.35, 0.35], [-0.16, -0.08, 0.0, 0.08, 0.16], 0.55, 0.0),
+    _mk_scenario([0.35, 0.35, 0.40, 0.35, 0.35], [-0.16, -0.08, 0.0, 0.08, 0.16], 0.55, 0.08),
+    _mk_scenario([0.35, 0.35, 0.40, 0.35, 0.35], [-0.16, -0.08, 0.0, 0.08, 0.16], 0.55, -0.08),
+    _mk_scenario([0.35, 0.35, 0.40, 0.35, 0.35], [-0.16, -0.08, 0.0, 0.08, 0.16], 0.52, 0.12),
+    _mk_scenario([0.35, 0.35, 0.40, 0.35, 0.35], [-0.16, -0.08, 0.0, 0.08, 0.16], 0.52, -0.12),
 
     # ── Cubes spread wider in y ───────────────────────────────────────────────
-    _mk_scenario([0.73]*5, [-0.20, -0.10, 0.0, 0.10, 0.20], 0.87, 0.0),
-    _mk_scenario([0.73]*5, [-0.20, -0.10, 0.0, 0.10, 0.20], 0.87, 0.10),
-    _mk_scenario([0.73]*5, [-0.20, -0.10, 0.0, 0.10, 0.20], 0.87, -0.10),
+    _mk_scenario([0.34]*5, [-0.18, -0.09, 0.0, 0.09, 0.18], 0.56, 0.0),
+    _mk_scenario([0.34]*5, [-0.18, -0.09, 0.0, 0.09, 0.18], 0.56, 0.08),
+    _mk_scenario([0.34]*5, [-0.18, -0.09, 0.0, 0.09, 0.18], 0.56, -0.08),
 
     # ── Cubes in a 2-column arrangement ──────────────────────────────────────
-    _mk_scenario([0.70, 0.70, 0.77, 0.77, 0.73],
-                 [-0.12, 0.12, -0.12, 0.12, 0.0], 0.85, 0.0),
-    _mk_scenario([0.70, 0.70, 0.77, 0.77, 0.73],
-                 [-0.12, 0.12, -0.12, 0.12, 0.0], 0.85, -0.12),
+    _mk_scenario([0.34, 0.34, 0.41, 0.41, 0.38],
+                 [-0.12, 0.12, -0.12, 0.12, 0.0], 0.55, 0.0),
+    _mk_scenario([0.34, 0.34, 0.41, 0.41, 0.38],
+                 [-0.12, 0.12, -0.12, 0.12, 0.0], 0.55, -0.08),
 
     # ── Varied x-positions (cubes not on same row) ───────────────────────────
-    _mk_scenario([0.70, 0.73, 0.76, 0.79, 0.75],
-                 [-0.15, -0.07, 0.0, 0.07, 0.15], 0.85, 0.0),
-    _mk_scenario([0.71, 0.74, 0.77, 0.80, 0.74],
-                 [-0.14, -0.07, 0.0, 0.07, 0.14], 0.83, 0.05),
+    _mk_scenario([0.33, 0.36, 0.39, 0.42, 0.38],
+                 [-0.15, -0.07, 0.0, 0.07, 0.15], 0.55, 0.0),
+    _mk_scenario([0.34, 0.37, 0.40, 0.43, 0.37],
+                 [-0.14, -0.07, 0.0, 0.07, 0.14], 0.54, 0.05),
 
     # ── Stack target moved to corners of reachable zone ───────────────────────
-    _mk_scenario([0.75]*5, [-0.18, -0.09, 0.0, 0.09, 0.18], 0.88, 0.18),
-    _mk_scenario([0.75]*5, [-0.18, -0.09, 0.0, 0.09, 0.18], 0.88, -0.18),
-    _mk_scenario([0.75]*5, [-0.18, -0.09, 0.0, 0.09, 0.18], 0.78, 0.0),
+    _mk_scenario([0.35]*5, [-0.16, -0.08, 0.0, 0.08, 0.16], 0.58, 0.14),
+    _mk_scenario([0.35]*5, [-0.16, -0.08, 0.0, 0.08, 0.16], 0.58, -0.14),
+    _mk_scenario([0.35]*5, [-0.16, -0.08, 0.0, 0.08, 0.16], 0.50, 0.0),
 
     # ── Cubes with yaw variation ──────────────────────────────────────────────
-    _mk_scenario([0.75]*5, [-0.18, -0.09, 0.0, 0.09, 0.18], 0.85, 0.0,
+    _mk_scenario([0.35]*5, [-0.16, -0.08, 0.0, 0.08, 0.16], 0.55, 0.0,
                  yaws=[0.0, math.pi/4, -math.pi/4, math.pi/6, -math.pi/6]),
-    _mk_scenario([0.75]*5, [-0.18, -0.09, 0.0, 0.09, 0.18], 0.85, 0.08,
+    _mk_scenario([0.35]*5, [-0.16, -0.08, 0.0, 0.08, 0.16], 0.55, 0.08,
                  yaws=[math.pi/8]*5),
-    _mk_scenario([0.75]*5, [-0.18, -0.09, 0.0, 0.09, 0.18], 0.85, -0.08,
+    _mk_scenario([0.35]*5, [-0.16, -0.08, 0.0, 0.08, 0.16], 0.55, -0.08,
                  yaws=[-math.pi/8, math.pi/8, 0.0, math.pi/4, -math.pi/4]),
 
     # ── Compact cube cluster ──────────────────────────────────────────────────
-    _mk_scenario([0.74, 0.75, 0.76, 0.74, 0.76],
-                 [-0.08, -0.04, 0.0, 0.04, 0.08], 0.85, 0.0),
-    _mk_scenario([0.73, 0.74, 0.75, 0.74, 0.73],
-                 [-0.08, -0.04, 0.0, 0.04, 0.08], 0.86, 0.0),
+    _mk_scenario([0.36, 0.37, 0.38, 0.36, 0.38],
+                 [-0.08, -0.04, 0.0, 0.04, 0.08], 0.55, 0.0),
+    _mk_scenario([0.35, 0.36, 0.37, 0.36, 0.35],
+                 [-0.08, -0.04, 0.0, 0.04, 0.08], 0.56, 0.0),
 
     # ── Asymmetric cube arrangements ──────────────────────────────────────────
-    _mk_scenario([0.70, 0.72, 0.74, 0.76, 0.78],
-                 [0.0, 0.0, 0.0, 0.0, 0.0], 0.85, 0.0),
-    _mk_scenario([0.75, 0.75, 0.75, 0.75, 0.75],
-                 [-0.15, 0.15, -0.10, 0.10, 0.0], 0.87, 0.0),
-    _mk_scenario([0.72, 0.78, 0.72, 0.78, 0.75],
-                 [-0.12, -0.12, 0.12, 0.12, 0.0], 0.85, 0.0),
-    _mk_scenario([0.73, 0.73, 0.73, 0.73, 0.73],
-                 [-0.16, -0.08, 0.0, 0.08, 0.16], 0.85, -0.05),
+    _mk_scenario([0.33, 0.35, 0.37, 0.39, 0.41],
+                 [0.0, 0.0, 0.0, 0.0, 0.0], 0.55, 0.0),
+    _mk_scenario([0.36, 0.36, 0.36, 0.36, 0.36],
+                 [-0.15, 0.15, -0.10, 0.10, 0.0], 0.57, 0.0),
+    _mk_scenario([0.34, 0.41, 0.34, 0.41, 0.38],
+                 [-0.12, -0.12, 0.12, 0.12, 0.0], 0.55, 0.0),
+    _mk_scenario([0.34, 0.34, 0.34, 0.34, 0.34],
+                 [-0.16, -0.08, 0.0, 0.08, 0.16], 0.55, -0.05),
 
-    # ── Challenging reach: cubes further forward ──────────────────────────────
-    _mk_scenario([0.78]*5, [-0.15, -0.07, 0.0, 0.07, 0.15], 0.90, 0.0),
-    _mk_scenario([0.76]*5, [-0.15, -0.07, 0.0, 0.07, 0.15], 0.88, 0.10),
+    # ── Challenging reach within the lift workspace ───────────────────────────
+    _mk_scenario([0.42]*5, [-0.15, -0.07, 0.0, 0.07, 0.15], 0.58, 0.0),
+    _mk_scenario([0.40]*5, [-0.15, -0.07, 0.0, 0.07, 0.15], 0.58, 0.10),
 
     # ── Mixed x/y with varied stack ──────────────────────────────────────────
-    _mk_scenario([0.71, 0.74, 0.77, 0.74, 0.71],
-                 [-0.14, -0.07, 0.0, 0.07, 0.14], 0.84, 0.0),
-    _mk_scenario([0.73, 0.76, 0.73, 0.76, 0.74],
-                 [-0.12, -0.06, 0.0, 0.06, 0.12], 0.86, 0.06),
-    _mk_scenario([0.74, 0.74, 0.74, 0.74, 0.74],
-                 [-0.18, -0.09, 0.0, 0.09, 0.18], 0.85, -0.06),
+    _mk_scenario([0.34, 0.37, 0.40, 0.37, 0.34],
+                 [-0.14, -0.07, 0.0, 0.07, 0.14], 0.54, 0.0),
+    _mk_scenario([0.35, 0.39, 0.35, 0.39, 0.37],
+                 [-0.12, -0.06, 0.0, 0.06, 0.12], 0.56, 0.06),
+    _mk_scenario([0.36, 0.36, 0.36, 0.36, 0.36],
+                 [-0.18, -0.09, 0.0, 0.09, 0.18], 0.55, -0.06),
 
     # ── Scenario 29: maximum separation ──────────────────────────────────────
-    _mk_scenario([0.70, 0.72, 0.74, 0.76, 0.78],
-                 [-0.18, -0.09, 0.0, 0.09, 0.18], 0.88, 0.0),
+    _mk_scenario([0.33, 0.35, 0.37, 0.39, 0.42],
+                 [-0.18, -0.09, 0.0, 0.09, 0.18], 0.58, 0.0),
 ]
 
 assert len(EVAL_SCENARIOS) == 30, f"Expected 30 scenarios, got {len(EVAL_SCENARIOS)}"

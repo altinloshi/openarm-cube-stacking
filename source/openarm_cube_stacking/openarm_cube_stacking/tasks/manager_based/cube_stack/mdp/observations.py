@@ -8,25 +8,22 @@ from isaaclab.assets import RigidObject
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.sensors import FrameTransformer
 
+from ..openarm_lift_style_scene_cfg import (
+    CUBE_CENTER_Z,
+    CUBE_NAMES,
+    CUBE_SIZE,
+    NUM_CUBES,
+    OPENARM_LIFT_CUBE_SPAWN_LOCAL_POSITIONS,
+    OPENARM_LIFT_STACK_BASE_LOCAL_POS,
+    TABLE_TOP_Z,
+)
+
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
 
 
-NUM_CUBES = 5
-CUBE_SIZE = 0.05
-TABLE_HEIGHT = 0.20
-TABLE_TOP_Z = TABLE_HEIGHT
-CUBE_CENTER_Z = TABLE_TOP_Z + CUBE_SIZE / 2.0
-CUBE_NAMES = tuple(f"cube_{i}" for i in range(NUM_CUBES))
-
-DEFAULT_CUBE_SPAWN_LOCAL_POSITIONS = (
-    (0.34, -0.18, CUBE_CENTER_Z),
-    (0.34, -0.09, CUBE_CENTER_Z),
-    (0.34, 0.00, CUBE_CENTER_Z),
-    (0.34, 0.09, CUBE_CENTER_Z),
-    (0.34, 0.18, CUBE_CENTER_Z),
-)
-DEFAULT_STACK_BASE_LOCAL_POS = (0.55, 0.0, CUBE_CENTER_Z)
+DEFAULT_CUBE_SPAWN_LOCAL_POSITIONS = OPENARM_LIFT_CUBE_SPAWN_LOCAL_POSITIONS
+DEFAULT_STACK_BASE_LOCAL_POS = OPENARM_LIFT_STACK_BASE_LOCAL_POS
 
 
 def _scene_origins(env: ManagerBasedRLEnv) -> torch.Tensor:

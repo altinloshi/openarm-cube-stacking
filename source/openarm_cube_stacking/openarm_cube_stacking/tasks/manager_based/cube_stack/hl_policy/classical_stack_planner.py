@@ -85,7 +85,7 @@ class ClassicalStackPlanner:
     cube_size:
         Cube edge length in metres.
     table_top_z:
-        Z of the table top surface in the local environment frame.
+        Effective support surface height in the local environment frame.
     pre_grasp_height:
         Height above cube centre for PRE_GRASP waypoint (metres).
     lift_height:
@@ -119,7 +119,7 @@ class ClassicalStackPlanner:
         device: torch.device | str,
         num_cubes: int = 5,
         cube_size: float = 0.05,
-        table_top_z: float = 0.20,
+        table_top_z: float = 0.03,
         pre_grasp_height: float = 0.12,
         lift_height: float = 0.15,
         stack_approach_height: float = 0.12,
