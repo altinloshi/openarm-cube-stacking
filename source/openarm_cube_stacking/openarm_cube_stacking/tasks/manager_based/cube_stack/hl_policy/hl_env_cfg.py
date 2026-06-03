@@ -25,9 +25,9 @@ from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.utils import configclass
 
 from .. import tabletop
-from ..ll_policy.ll_env_cfg import USE_DIFFERENTIAL_IK, LLEnvCfg
+from ..ll_policy.ll_env_cfg import LLEnvCfg
 from ..ll_policy.ll_env_cfg import RewardsCfg as LLRewardsCfg
-from ..tabletop import OpenArmTabletopStackSceneCfg, make_tabletop_robot
+from ..tabletop import OpenArmTabletopStackSceneCfg
 from . import mdp
 
 
@@ -38,9 +38,10 @@ from . import mdp
 
 @configclass
 class HLSceneCfg(OpenArmTabletopStackSceneCfg):
-    """Tabletop scene with five cubes and the OpenArm mounted on the table."""
+    """Tabletop scene with five cubes and the OpenArm mounted on the table.
 
-    robot = make_tabletop_robot(high_pd=USE_DIFFERENTIAL_IK)
+    The robot variant is selected in ``LLEnvCfg.__post_init__`` (inherited).
+    """
 
 
 ##
@@ -105,8 +106,8 @@ class HLEventCfg:
 
 @configclass
 class HLRewardsCfg(LLRewardsCfg):
-    """Inherits the LL tracking rewards (kept so the LL curriculum stays valid)
-    and adds a diagnostic stack-progress term."""
+    """Inherits the LL tracking rewards (so the LL curriculum stays valid) and
+    adds a zero-weight diagnostic stack-progress term."""
 
     stack_progress = RewTerm(func=mdp.stack_progress, weight=0.0)
 

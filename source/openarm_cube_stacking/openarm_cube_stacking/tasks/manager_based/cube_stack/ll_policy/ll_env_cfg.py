@@ -84,10 +84,9 @@ IK_BODY_OFFSET = (0.0, 0.0, 0.0)
 class LLSceneCfg(OpenArmTabletopSceneCfg):
     """Tabletop scene for LL EE-tracking (no cubes needed).
 
-    Uses the high-PD OpenArm variant which is required for accurate IK tracking.
+    The robot variant (stiff high-PD for differential IK) is selected in
+    ``LLEnvCfg.__post_init__`` so the choice follows ``USE_DIFFERENTIAL_IK``.
     """
-
-    robot = make_tabletop_robot(high_pd=USE_DIFFERENTIAL_IK)
 
 
 ##
@@ -105,12 +104,15 @@ class CommandsCfg:
         resampling_time_range=(4.0, 4.0),
         debug_vis=True,
         ranges=mdp.UniformPoseCommandCfg.Ranges(
-            # Reachable workspace above the tabletop, expressed in the robot base
-            # frame. These ranges are a sensible default for the OpenArm mounted
-            # on the table; tune them to the measured reachable set if needed.
-            pos_x=(0.10, 0.45),
-            pos_y=(-0.30, 0.30),
-            pos_z=(0.05, 0.40),
+            # Reachable workspace above the tabletop, expressed in the OpenArm
+            # base frame. The ranges are deliberately broad and symmetric in X/Y
+            # so they cover the cube spawn region and the stack column regardless
+            # of the precise base-link frame orientation. The Z range reaches high
+            # enough to place and retract above a full five-cube stack. Tighten
+            # these to the measured reachable set once validated in simulation.
+            pos_x=(-0.45, 0.45),
+            pos_y=(-0.40, 0.40),
+            pos_z=(0.0, 0.55),
             # Orientation: gripper pointing mostly down with limited roll and full
             # yaw freedom (pitch ~ pi => tool z-axis points at the table).
             roll=(-0.3, 0.3),
@@ -328,6 +330,13 @@ class LLEnvCfg(ManagerBasedRLEnvCfg):
     curriculum: CurriculumCfg = CurriculumCfg()
 
     def __post_init__(self) -> None:
+        # Select the robot variant: stiff high-PD for IK, default for joint control.
+        # Swapping here (rather than as a scene class attribute) follows the
+        # canonical Isaac Lab override pattern and reliably applies the choice.
+        self.scene.robot = make_tabletop_robot(high_pd=USE_DIFFERENTIAL_IK)
+        if not USE_DIFFERENTIAL_IK:
+            self.actions = JointPositionActionsCfg()
+
         # 60 Hz physics, 30 Hz policy (decimation = 2).
         self.decimation = 2
         self.episode_length_s = 6.0
@@ -340,7 +349,3 @@ class LLEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.physx.gpu_found_lost_aggregate_pairs_capacity = 1024 * 1024 * 4
         self.sim.physx.gpu_total_aggregate_pairs_capacity = 16 * 1024
         self.sim.physx.friction_correlation_distance = 0.00625
-
-        # Select the joint-position fallback when differential IK is disabled.
-        if not USE_DIFFERENTIAL_IK:
-            self.actions = JointPositionActionsCfg()
