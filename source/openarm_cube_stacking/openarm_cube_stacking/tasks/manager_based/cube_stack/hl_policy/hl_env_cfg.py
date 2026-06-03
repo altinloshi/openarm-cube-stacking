@@ -49,7 +49,7 @@ from . import mdp
 
 @configclass
 class HLSceneCfg(OpenArmTabletopWithCubesSceneCfg):
-    """Official OpenArm lift-style scene with robot and five cubes."""
+    """Official OpenArm lift-style USD table scene with robot and five cubes."""
 
     def __post_init__(self) -> None:
         super().__post_init__()

@@ -25,7 +25,7 @@ from .mdp.observations import (
 
 @configclass
 class OpenArmCubeStackSceneCfg(OpenArmTabletopWithCubesSceneCfg):
-    """OpenArm lift-style scene with five DexCube objects for stacking."""
+    """OpenArm lift-style USD table scene with five DexCube objects for stacking."""
 
 
 ##
