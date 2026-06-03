@@ -1,7 +1,9 @@
 """Deterministic tournament evaluation for OpenArm cube stacking.
 
-Registers the evaluation environment and exposes the deterministic scenarios and
-metric helpers used by ``scripts/eval/evaluate_stack.py``.
+Registers the evaluation environment. The deterministic scenarios
+(:mod:`scenarios`) and metric helpers (:mod:`metrics`) are imported lazily by
+``scripts/eval/evaluate_stack.py`` and the HL eval reset event, so importing
+this package (for registration) does not pull in torch / Isaac Lab eagerly.
 
 Registered environment:
   Nepher-OpenArm-CubeStack-Eval-v0 — 30 deterministic scenarios, no noise,
@@ -11,7 +13,6 @@ Registered environment:
 import gymnasium as gym
 
 from ..ll_policy import agents as ll_agents
-from . import metrics, scenarios  # noqa: F401
 
 gym.register(
     id="Nepher-OpenArm-CubeStack-Eval-v0",
