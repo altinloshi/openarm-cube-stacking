@@ -12,21 +12,22 @@ if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
 
 
-NUM_CUBES = 5
-CUBE_SIZE = 0.05
-TABLE_HEIGHT = 0.20
-TABLE_TOP_Z = TABLE_HEIGHT
-CUBE_CENTER_Z = TABLE_TOP_Z + CUBE_SIZE / 2.0
-CUBE_NAMES = tuple(f"cube_{i}" for i in range(NUM_CUBES))
-
-DEFAULT_CUBE_SPAWN_LOCAL_POSITIONS = (
-    (0.34, -0.18, CUBE_CENTER_Z),
-    (0.34, -0.09, CUBE_CENTER_Z),
-    (0.34, 0.00, CUBE_CENTER_Z),
-    (0.34, 0.09, CUBE_CENTER_Z),
-    (0.34, 0.18, CUBE_CENTER_Z),
+# Geometry constants come from the shared lift-style scene config so the
+# end-to-end baseline shares the exact OpenArm-lift layout used by every other
+# task in this package.
+from ..openarm_lift_style_scene_cfg import (  # noqa: E402
+    CUBE_NAMES,
+    CUBE_SIZE,
+    CUBE_SPAWN_Z as CUBE_CENTER_Z,
+    DEFAULT_CUBE_SPAWN_LOCAL_POSITIONS,
+    DEFAULT_STACK_BASE_LOCAL_POS,
+    NUM_CUBES,
+    TABLE_TOP_Z,
 )
-DEFAULT_STACK_BASE_LOCAL_POS = (0.55, 0.0, CUBE_CENTER_Z)
+
+# ``TABLE_HEIGHT`` retained as a backwards-compatible alias; the lift-style scene
+# uses a USD lab table whose top surface sits at ``TABLE_TOP_Z = 0.0``.
+TABLE_HEIGHT = TABLE_TOP_Z
 
 
 def _scene_origins(env: ManagerBasedRLEnv) -> torch.Tensor:

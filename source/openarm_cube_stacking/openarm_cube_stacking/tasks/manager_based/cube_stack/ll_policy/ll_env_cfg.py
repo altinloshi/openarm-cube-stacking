@@ -49,16 +49,7 @@ from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.utils import configclass
 
-from ..tabletop_scene_cfg import (
-    CUBE_TABLE_Z,
-    ROBOT_ON_TABLE_X,
-    ROBOT_ON_TABLE_Y,
-    ROBOT_ON_TABLE_Z,
-    TABLE_CENTER_X,
-    TABLE_CENTER_Y,
-    TABLE_TOP_Z,
-    OpenArmTabletopSceneCfg,
-)
+from ..openarm_lift_style_scene_cfg import OpenArmLiftStyleSceneCfg
 from . import mdp
 
 
@@ -68,10 +59,12 @@ from . import mdp
 
 
 @configclass
-class LLSceneCfg(OpenArmTabletopSceneCfg):
-    """LL task scene: robot + table + ground + light + EE marker.
+class LLSceneCfg(OpenArmLiftStyleSceneCfg):
+    """LL task scene: robot + lab table + ground + light + EE marker.
 
     No cubes – the LL policy only needs the arm and environment geometry.
+    Uses the official OpenArm lift-style layout (robot on the lab-table top,
+    not raised onto a custom workbench).
     """
 
     def __post_init__(self) -> None:
@@ -113,11 +106,11 @@ class LLActionsCfg:
 
 @configclass
 class LLCommandsCfg:
-    """EE pose command: uniform random pose above the tabletop.
+    """EE pose command: uniform random pose above the table.
 
     Positions are expressed in the ROBOT BASE FRAME.
-    The robot base is at (ROBOT_ON_TABLE_X, ROBOT_ON_TABLE_Y, ROBOT_ON_TABLE_Z)
-    in the local env frame, so z=0 in base frame == table surface.
+    The OpenArm root sits on the lab-table top (z = 0 in the local env frame),
+    so z = 0 in the base frame corresponds to the table surface.
     """
 
     ee_pose = mdp.UniformPoseCommandCfg(

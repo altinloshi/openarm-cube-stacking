@@ -1,7 +1,7 @@
 """High-level environment base config for HL play and eval.
 
 This environment has:
-- OpenArm mounted on the tabletop (same robot + table as LL)
+- OpenArm fixed at the standard lift base pose (same robot + table as LL)
 - Five cubes on the table
 - ClassicalStackPlannerCommand providing EE target poses
 - LL-compatible observation space (so a frozen LL policy can be applied)
@@ -33,11 +33,11 @@ from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.utils import configclass
 
-from ..tabletop_scene_cfg import (
+from ..openarm_lift_style_scene_cfg import (
     CUBE_NAMES,
     TABLETOP_CUBE_SPAWN_LOCAL_POSITIONS,
     TABLETOP_STACK_BASE_LOCAL_POS,
-    OpenArmTabletopWithCubesSceneCfg,
+    OpenArmLiftStyleWithCubesSceneCfg,
 )
 from . import mdp
 
@@ -48,8 +48,8 @@ from . import mdp
 
 
 @configclass
-class HLSceneCfg(OpenArmTabletopWithCubesSceneCfg):
-    """Full tabletop scene with robot + cubes for HL tasks."""
+class HLSceneCfg(OpenArmLiftStyleWithCubesSceneCfg):
+    """Full lift-style scene with robot + five cubes for HL tasks."""
 
     def __post_init__(self) -> None:
         super().__post_init__()

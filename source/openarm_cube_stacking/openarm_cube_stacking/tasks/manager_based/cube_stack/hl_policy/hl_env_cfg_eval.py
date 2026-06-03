@@ -19,7 +19,7 @@ from ..eval.scenarios import (
     reset_cubes_from_scenario,
     reset_stack_from_scenario,
 )
-from ..tabletop_scene_cfg import CUBE_NAMES
+from ..openarm_lift_style_scene_cfg import CUBE_NAMES
 from . import mdp
 from .hl_env_cfg import HLSceneCfg, OpenArmHLEnvCfg
 

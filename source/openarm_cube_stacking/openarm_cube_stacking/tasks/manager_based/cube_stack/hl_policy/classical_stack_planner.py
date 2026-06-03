@@ -118,8 +118,8 @@ class ClassicalStackPlanner:
         num_envs: int,
         device: torch.device | str,
         num_cubes: int = 5,
-        cube_size: float = 0.05,
-        table_top_z: float = 0.20,
+        cube_size: float = 0.064,
+        table_top_z: float = 0.0,
         pre_grasp_height: float = 0.12,
         lift_height: float = 0.15,
         stack_approach_height: float = 0.12,
@@ -239,9 +239,13 @@ class ClassicalStackPlanner:
     # Internal helpers
     # ─────────────────────────────────────────────────────────────────────────
 
-    def _stack_target_z(self, cube_i: torch.Tensor) -> torch.Tensor:
-        """Z coordinate for cube_i in the stack (centre of cube)."""
-        return self.table_top_z + self.cube_size / 2.0 + cube_i.float() * self.cube_size
+    def _stack_target_z(self, cube_i: torch.Tensor, stack_base_z: torch.Tensor) -> torch.Tensor:
+        """Z coordinate for cube_i in the stack (centre of cube).
+
+        Keyed off the per-env stack base z so the planner targets match the
+        reward / observation stack-target heights exactly.
+        """
+        return stack_base_z + cube_i.float() * self.cube_size
 
     def _process_stage(
         self,
@@ -257,6 +261,8 @@ class ClassicalStackPlanner:
         idx = self.cube_idx  # (num_envs,)
         # Gather current cube positions: (num_envs, 3)
         cube_pos_current = self._gather_cube(cube_pos_w, idx)
+        # Stack base z (per-env) drives all stack-target heights.
+        stack_base_z = stack_base_pos_w[:, 2]
 
         if stage == PlannerStage.PRE_GRASP:
             # Move EE above the current cube
@@ -308,7 +314,7 @@ class ClassicalStackPlanner:
         elif stage == PlannerStage.MOVE_ABOVE_STACK:
             # Move above the stack target XY at approach height
             target = stack_base_pos_w.clone()
-            stack_z = self._stack_target_z(idx)
+            stack_z = self._stack_target_z(idx, stack_base_z)
             target[:, 2] = stack_z + self.stack_approach_height
             self._set_target(mask, target, self._grasp_quat, grip=0.0)
             self._try_advance(mask, ee_pos_w, target, dt, self.min_dwell_time, PlannerStage.LOWER_TO_STACK)
@@ -316,21 +322,21 @@ class ClassicalStackPlanner:
         elif stage == PlannerStage.LOWER_TO_STACK:
             # Lower to exact stack position
             target = stack_base_pos_w.clone()
-            target[:, 2] = self._stack_target_z(idx)
+            target[:, 2] = self._stack_target_z(idx, stack_base_z)
             self._set_target(mask, target, self._grasp_quat, grip=0.0)
             self._try_advance(mask, ee_pos_w, target, dt, self.min_dwell_time, PlannerStage.RELEASE)
 
         elif stage == PlannerStage.RELEASE:
             # Open gripper; dwell to release
             target = stack_base_pos_w.clone()
-            target[:, 2] = self._stack_target_z(idx)
+            target[:, 2] = self._stack_target_z(idx, stack_base_z)
             self._set_target(mask, target, self._grasp_quat, grip=1.0)
             self._try_advance(mask, ee_pos_w, target, dt, self.release_dwell_time, PlannerStage.RETRACT)
 
         elif stage == PlannerStage.RETRACT:
             # Rise above the stack
             target = stack_base_pos_w.clone()
-            target[:, 2] = self._stack_target_z(idx) + self.retract_height
+            target[:, 2] = self._stack_target_z(idx, stack_base_z) + self.retract_height
             self._set_target(mask, target, self._grasp_quat, grip=1.0)
             self._try_advance(mask, ee_pos_w, target, dt, self.min_dwell_time, PlannerStage.NEXT_CUBE)
 

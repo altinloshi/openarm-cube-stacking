@@ -12,7 +12,7 @@ import torch
 from isaaclab.assets import Articulation, RigidObject
 from isaaclab.managers import SceneEntityCfg
 
-from ...tabletop_scene_cfg import (
+from ...openarm_lift_style_scene_cfg import (
     CUBE_NAMES,
     TABLETOP_CUBE_SPAWN_LOCAL_POSITIONS,
     TABLETOP_STACK_BASE_LOCAL_POS,

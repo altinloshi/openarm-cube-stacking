@@ -13,30 +13,33 @@ LL Policy / Goal-conditioned EE tracker
     ↓  tracks target EE pose + gripper command
 Joint-position control + binary gripper
     ↓
-OpenArm mounted on tabletop
+OpenArm fixed at the standard lift base pose
 ```
 
 ### Visual Setup
 
-All hierarchical environments feature:
+All cube-stacking environments reproduce the official
+`Isaac-Lift-Cube-OpenArm-Play-v0` scene:
 - Multiple parallel Isaac Lab environments
-- One large table/workbench per environment
-- **OpenArm mounted on top of the table** (not floor-mounted)
-- Five cubes placed on the tabletop
-- Stack target position on the tabletop
-- Debug visualisation for EE target frame and planner waypoints
+- Standard `SeattleLabTable` lab table (top surface at `z = 0`)
+- **OpenArm fixed at the standard lift base pose** (root on the lab-table top,
+  not raised onto a custom workbench)
+- Five `DexCube` objects (scale 0.8) placed in front of the arm
+- Stack target position in the same reachable workspace
+- Debug visualisation for the current EE frame, the target EE command frame,
+  the stack-target tower, and the current cube index
 
 ### Environment Overview
 
 | Environment ID | Description |
 |---|---|
-| `Nepher-OpenArm-CubeStack-v0` | Original floor-mounted end-to-end baseline |
+| `Nepher-OpenArm-CubeStack-v0` | End-to-end baseline (lift-style scene) |
 | `Nepher-OpenArm-CubeStack-Play-v0` | Play variant of the baseline |
 | `Nepher-OpenArm-CubeStack-EndToEnd-v0` | EndToEnd alias (same as baseline) |
 | `Nepher-OpenArm-CubeStack-EndToEnd-Play-v0` | Play variant alias |
-| `Nepher-OpenArm-CubeStack-LL-v0` | **Low-level EE tracker** (tabletop, no cubes) |
+| `Nepher-OpenArm-CubeStack-LL-v0` | **Low-level EE tracker** (lift-style scene, no cubes) |
 | `Nepher-OpenArm-CubeStack-LL-Play-v0` | Play variant of LL tracker |
-| `Nepher-OpenArm-CubeStack-HL-Classical-Play-v0` | **Classical planner + LL policy** (tabletop + cubes) |
+| `Nepher-OpenArm-CubeStack-HL-Classical-Play-v0` | **Classical planner + LL policy** (lift-style scene + cubes) |
 | `Nepher-OpenArm-CubeStack-Eval-v0` | **Deterministic 30-scenario tournament evaluation** |
 
 ---
@@ -82,7 +85,7 @@ scripts/
 source/openarm_cube_stacking/
   openarm_cube_stacking/
     tasks/manager_based/cube_stack/
-      tabletop_scene_cfg.py   ← NEW: shared scene constants + robot-on-table config
+      openarm_lift_style_scene_cfg.py  ← shared scene matching Isaac-Lift-Cube-OpenArm
       cube_stack_env_cfg.py   ← existing end-to-end baseline
       cube_stack_env_cfg_play.py
       mdp/                    ← existing MDP modules
@@ -124,7 +127,8 @@ source/openarm_cube_stacking/
 
 ## 1. End-to-End Baseline (existing task)
 
-The original floor-mounted five-cube stacking task remains unchanged.
+The end-to-end five-cube stacking task now uses the same OpenArm lift-style
+scene as the hierarchical tasks (its task/MDP behaviour is otherwise unchanged).
 
 ```bash
 # Train
@@ -150,21 +154,47 @@ The hierarchical pipeline splits the task into:
   pickup and placement sequences.  It reads cube positions from the scene
   and emits EE target poses consumed by the LL policy.
 
-### Tabletop Scene
+### OpenArm Lift-Style Scene
 
-All hierarchical environments mount the robot ON TOP OF THE TABLE:
+All cube-stacking environments reproduce the official
+`Isaac-Lift-Cube-OpenArm-Play-v0` scene exactly.  The OpenArm is fixed at the
+standard lift base pose (root on the lab-table top), a `SeattleLabTable` USD is
+used as the table, and the ground plane is dropped so the table top sits at
+`z = 0`.  The robot is **not** raised onto a custom workbench.
 
 ```
-TABLE_HEIGHT = 0.20 m           # table top surface Z
-TABLE_TOP_Z  = 0.20 m
-ROBOT_ON_TABLE_Z = TABLE_TOP_Z  # robot base at table surface
-CUBE_TABLE_Z = 0.225 m          # cube centre when resting on table
+TABLE_TOP_Z   = 0.0 m            # lab-table top surface (robot root height)
+GROUND_Z      = -1.05 m          # ground plane (table top flush with z=0)
+CUBE_SCALE    = 0.8              # DexCube scale (matches the lift object)
+CUBE_HEIGHT   = 0.064 m          # effective cube edge / stack step
+CUBE_SPAWN_Z  = 0.055 m          # cube spawn height (matches the lift object)
 ```
 
-Constants live in `tabletop_scene_cfg.py`.  To tune the robot-table offset:
+The single lift object is replaced by five colour-coded `DexCube`s
+(`dex_cube_instanceable.usd`) placed in front of the arm:
 
-```python
-OPENARM_BASE_Z_OFFSET = 0.0  # adjust if robot floats/sinks
+```
+cube_0: [0.35, -0.16, 0.055]
+cube_1: [0.35, -0.08, 0.055]
+cube_2: [0.40,  0.00, 0.055]
+cube_3: [0.35,  0.08, 0.055]
+cube_4: [0.35,  0.16, 0.055]
+stack base: [0.55, 0.0, 0.055]   # target_z(i) = 0.055 + i * CUBE_HEIGHT
+```
+
+Constants and scene classes live in `openarm_lift_style_scene_cfg.py`
+(`OpenArmLiftStyleSceneCfg` / `OpenArmLiftStyleWithCubesSceneCfg`).  The EE
+frame transformer uses the official OpenArm frame names: root `openarm_link0`,
+EE body `openarm_hand`, TCP target `openarm_ee_tcp`.
+
+### Visual verification
+
+Compare the Nepher cube-stack scenes against the official OpenArm lift scene:
+
+```bash
+../IsaacLab/isaaclab.sh -p scripts/zero_agent.py --task=Isaac-Lift-Cube-OpenArm-Play-v0 --num_envs=1
+../IsaacLab/isaaclab.sh -p scripts/zero_agent.py --task=Nepher-OpenArm-CubeStack-LL-Play-v0 --num_envs=1
+../IsaacLab/isaaclab.sh -p scripts/zero_agent.py --task=Nepher-OpenArm-CubeStack-HL-Classical-Play-v0 --num_envs=1
 ```
 
 ---

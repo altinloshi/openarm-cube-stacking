@@ -16,12 +16,14 @@ from typing import TYPE_CHECKING
 import torch
 
 from isaaclab.managers import CommandTerm, CommandTermCfg
+from isaaclab.markers import VisualizationMarkers
+from isaaclab.markers.config import FRAME_MARKER_CFG
 from isaaclab.sensors import FrameTransformer
 from isaaclab.utils import configclass
 from isaaclab.utils.math import subtract_frame_transforms
 
 from ..classical_stack_planner import ClassicalStackPlanner
-from ...tabletop_scene_cfg import (
+from ...openarm_lift_style_scene_cfg import (
     CUBE_NAMES,
     CUBE_SIZE,
     NUM_CUBES,
@@ -143,8 +145,55 @@ class ClassicalStackPlannerCommand(CommandTerm):
             env.gripper_cmd = torch.zeros((env.num_envs, 1), device=env.device)
         env.gripper_cmd[:, 0] = target_grip
 
+    # ─────────────────────────────────────────────────────────────────────────
+    # Debug visualisation: stack-target tower + current target level
+    # ─────────────────────────────────────────────────────────────────────────
+
+    def _stack_target_translations(self) -> tuple[torch.Tensor, torch.Tensor]:
+        """Return marker translations and per-marker prototype indices.
+
+        Marker 0 (small frame) is drawn at every stack level for every env so
+        the full target tower is visible.  Marker 1 (larger frame) highlights
+        the level of the cube the planner is currently placing.
+        """
+        env = self._env
+        base = env.scene.env_origins + self._stack_base_local  # (N, 3)
+        levels = torch.arange(self.cfg.num_cubes, device=env.device, dtype=torch.float32)
+        # All tower levels: (N, num_cubes, 3)
+        tower = base[:, None, :].expand(-1, self.cfg.num_cubes, -1).clone()
+        tower[:, :, 2] = base[:, None, 2] + levels[None, :] * self.cfg.cube_size
+        tower = tower.reshape(-1, 3)
+        tower_idx = torch.zeros(tower.shape[0], dtype=torch.long, device=env.device)
+
+        # Current target level per env (clamped to the tower height).
+        cur = self._planner.cube_idx.clamp(0, self.cfg.num_cubes - 1).float()
+        current = base.clone()
+        current[:, 2] = base[:, 2] + cur * self.cfg.cube_size
+        current_idx = torch.ones(current.shape[0], dtype=torch.long, device=env.device)
+
+        translations = torch.cat([tower, current], dim=0)
+        marker_indices = torch.cat([tower_idx, current_idx], dim=0)
+        return translations, marker_indices
+
     def _set_debug_vis_impl(self, debug_vis: bool) -> None:
-        pass
+        if debug_vis:
+            if not hasattr(self, "_stack_marker"):
+                marker_cfg = FRAME_MARKER_CFG.copy()
+                marker_cfg.prim_path = "/Visuals/StackTarget"
+                marker_cfg.markers["frame"].scale = (0.05, 0.05, 0.05)
+                # Second prototype: a larger frame for the current target level.
+                marker_cfg.markers["current"] = marker_cfg.markers["frame"].copy()
+                marker_cfg.markers["current"].scale = (0.12, 0.12, 0.12)
+                self._stack_marker = VisualizationMarkers(marker_cfg)
+            self._stack_marker.set_visibility(True)
+        elif hasattr(self, "_stack_marker"):
+            self._stack_marker.set_visibility(False)
+
+    def _debug_vis_callback(self, event) -> None:
+        if not hasattr(self, "_stack_marker"):
+            return
+        translations, marker_indices = self._stack_target_translations()
+        self._stack_marker.visualize(translations=translations, marker_indices=marker_indices)
 
 
 @configclass

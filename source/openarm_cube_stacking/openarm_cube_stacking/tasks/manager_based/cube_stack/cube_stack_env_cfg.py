@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import isaaclab.sim as sim_utils
-from isaaclab.assets import ArticulationCfg, AssetBaseCfg, RigidObjectCfg
 from isaaclab.envs import ManagerBasedRLEnvCfg
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
@@ -9,51 +7,15 @@ from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
-from isaaclab.markers.config import FRAME_MARKER_CFG
-from isaaclab.scene import InteractiveSceneCfg
-from isaaclab.sensors.frame_transformer.frame_transformer_cfg import FrameTransformerCfg
 from isaaclab.utils import configclass
-from isaaclab_assets.robots.openarm import OPENARM_UNI_CFG
 
 from . import mdp
 from .mdp.observations import (
     CUBE_NAMES,
-    CUBE_SIZE,
     DEFAULT_CUBE_SPAWN_LOCAL_POSITIONS,
     DEFAULT_STACK_BASE_LOCAL_POS,
-    TABLE_HEIGHT,
 )
-
-_EE_MARKER_CFG = FRAME_MARKER_CFG.copy()
-_EE_MARKER_CFG.markers["frame"].scale = (0.08, 0.08, 0.08)
-_EE_MARKER_CFG.prim_path = "/Visuals/FrameTransformer"
-
-
-def _cube_cfg(name: str, pos: tuple[float, float, float], color: tuple[float, float, float]) -> RigidObjectCfg:
-    """Create one cube config with consistent physics properties."""
-    return RigidObjectCfg(
-        prim_path=f"{{ENV_REGEX_NS}}/{name}",
-        init_state=RigidObjectCfg.InitialStateCfg(pos=pos, rot=(1.0, 0.0, 0.0, 0.0)),
-        spawn=sim_utils.CuboidCfg(
-            size=(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE),
-            rigid_props=sim_utils.RigidBodyPropertiesCfg(
-                solver_position_iteration_count=16,
-                solver_velocity_iteration_count=1,
-                max_angular_velocity=1000.0,
-                max_linear_velocity=1000.0,
-                max_depenetration_velocity=5.0,
-                disable_gravity=False,
-            ),
-            mass_props=sim_utils.MassPropertiesCfg(mass=0.08),
-            collision_props=sim_utils.CollisionPropertiesCfg(),
-            physics_material=sim_utils.RigidBodyMaterialCfg(
-                static_friction=1.0,
-                dynamic_friction=0.8,
-                restitution=0.0,
-            ),
-            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=color, metallic=0.0),
-        ),
-    )
+from .openarm_lift_style_scene_cfg import OpenArmLiftStyleWithCubesSceneCfg
 
 
 ##
@@ -62,49 +24,12 @@ def _cube_cfg(name: str, pos: tuple[float, float, float], color: tuple[float, fl
 
 
 @configclass
-class OpenArmCubeStackSceneCfg(InteractiveSceneCfg):
-    """Scene with OpenArm, a table, and five stackable cubes."""
+class OpenArmCubeStackSceneCfg(OpenArmLiftStyleWithCubesSceneCfg):
+    """Scene with OpenArm, the lab table, and five stackable cubes.
 
-    robot: ArticulationCfg = OPENARM_UNI_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
-
-    table = AssetBaseCfg(
-        prim_path="{ENV_REGEX_NS}/Table",
-        init_state=AssetBaseCfg.InitialStateCfg(pos=(0.55, 0.0, TABLE_HEIGHT / 2.0)),
-        spawn=sim_utils.CuboidCfg(
-            size=(0.85, 0.70, TABLE_HEIGHT),
-            collision_props=sim_utils.CollisionPropertiesCfg(),
-            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.35, 0.35, 0.35), metallic=0.0),
-        ),
-    )
-
-    plane = AssetBaseCfg(
-        prim_path="/World/GroundPlane",
-        init_state=AssetBaseCfg.InitialStateCfg(pos=(0.0, 0.0, -0.02)),
-        spawn=sim_utils.GroundPlaneCfg(),
-    )
-
-    light = AssetBaseCfg(
-        prim_path="/World/light",
-        spawn=sim_utils.DomeLightCfg(color=(0.75, 0.75, 0.75), intensity=3000.0),
-    )
-
-    ee_frame = FrameTransformerCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/openarm_link0",
-        debug_vis=False,
-        visualizer_cfg=_EE_MARKER_CFG,
-        target_frames=[
-            FrameTransformerCfg.FrameCfg(
-                prim_path="{ENV_REGEX_NS}/Robot/openarm_ee_tcp",
-                name="end_effector",
-            ),
-        ],
-    )
-
-    cube_0 = _cube_cfg("Cube_0", DEFAULT_CUBE_SPAWN_LOCAL_POSITIONS[0], (0.9, 0.1, 0.1))
-    cube_1 = _cube_cfg("Cube_1", DEFAULT_CUBE_SPAWN_LOCAL_POSITIONS[1], (0.1, 0.4, 0.9))
-    cube_2 = _cube_cfg("Cube_2", DEFAULT_CUBE_SPAWN_LOCAL_POSITIONS[2], (0.1, 0.8, 0.2))
-    cube_3 = _cube_cfg("Cube_3", DEFAULT_CUBE_SPAWN_LOCAL_POSITIONS[3], (0.9, 0.7, 0.1))
-    cube_4 = _cube_cfg("Cube_4", DEFAULT_CUBE_SPAWN_LOCAL_POSITIONS[4], (0.6, 0.2, 0.8))
+    Reuses the official OpenArm lift-style layout (robot on the lab-table top,
+    DexCube objects in front of the arm) shared with every other Nepher task.
+    """
 
 
 ##
