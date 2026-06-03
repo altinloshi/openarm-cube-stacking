@@ -56,7 +56,14 @@ def reset_cubes_lift_style(
     """Reset cubes to OpenArm lift-style positions with optional XY noise."""
     env_ids = _resolve_env_ids(env, env_ids)
     origins = env.scene.env_origins[env_ids]
-    local_pos = torch.tensor(local_positions, dtype=torch.float32, device=env.device)
+    # local_positions may be provided as a dict keyed by cube name.
+    # Convert it to an ordered tensor using cube_names so cube_i gets the right pose.
+    if isinstance(local_positions, dict):
+        local_positions_ordered = [local_positions[name] for name in cube_names]
+    else:
+        local_positions_ordered = local_positions
+
+    local_pos = torch.tensor(local_positions_ordered, dtype=torch.float32, device=env.device)
 
     noise_xy = (
         torch.empty((len(env_ids), len(cube_names), 2), device=env.device).uniform_(
@@ -102,7 +109,14 @@ def reset_stack_target_lift_style(
 
     # Also update the planner's stack base cache if available
     cmd_mgr = getattr(env, "command_manager", None)
-    if cmd_mgr is not None and cmd_mgr.has_term("ee_pose"):
+    planner = None
+    if cmd_mgr is not None:
+        try:
+            planner = cmd_mgr.get_term("ee_pose")
+        except Exception:
+            planner = None
+
+    if planner is not None:
         cmd_term = cmd_mgr.get_term("ee_pose")
         if hasattr(cmd_term, "_stack_base_local"):
             # The planner recomputes from env_origins at each step; no direct update needed

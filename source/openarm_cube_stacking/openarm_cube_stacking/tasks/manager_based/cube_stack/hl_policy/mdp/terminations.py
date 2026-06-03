@@ -31,7 +31,14 @@ def planner_done(env: ManagerBasedRLEnv, command_name: str = "ee_pose") -> torch
     from ..classical_stack_planner import PlannerStage
 
     cmd_mgr = getattr(env, "command_manager", None)
-    if cmd_mgr is not None and cmd_mgr.has_term(command_name):
+    planner = None
+    if cmd_mgr is not None:
+        try:
+            planner = cmd_mgr.get_term(command_name)
+        except Exception:
+            planner = None
+
+    if planner is not None:
         cmd_term = cmd_mgr.get_term(command_name)
         if hasattr(cmd_term, "_planner"):
             return cmd_term._planner.stage == PlannerStage.DONE

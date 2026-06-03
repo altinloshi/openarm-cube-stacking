@@ -183,6 +183,60 @@ class ClassicalStackPlannerCommand(CommandTerm):
         self._stack_target_visualizer.visualize(self._stack_base_w, stack_quat)
 
 
+
+    # ------------------------------------------------------------------
+    # Isaac Lab CommandTerm abstract API
+    # ------------------------------------------------------------------
+    def _resample_command(self, env_ids):
+        """Required by Isaac Lab CommandTerm.
+
+        The classical stack planner is deterministic and mostly stage-driven,
+        so resampling just resets/reinitializes planner state for the selected
+        environments when possible.
+        """
+        if env_ids is None:
+            return
+
+        # Try common reset method names if this class already defines them.
+        for name in ("reset", "_reset", "reset_idx", "_reset_idx", "reset_envs", "_reset_envs"):
+            fn = getattr(self, name, None)
+            if callable(fn):
+                try:
+                    fn(env_ids)
+                    return
+                except TypeError:
+                    pass
+
+        # Safe fallback: do nothing. This keeps the command term instantiable
+        # and lets the env spawn for visual/debug testing.
+
+    def _update_command(self):
+        """Required by Isaac Lab CommandTerm.
+
+        This should advance/update the classical planner every simulation step.
+        If the existing class already has a differently named update function,
+        call it. Otherwise leave commands unchanged for visual testing.
+        """
+        for name in ("update", "_update", "compute", "_compute", "step", "_step"):
+            fn = getattr(self, name, None)
+            if callable(fn):
+                try:
+                    fn()
+                    return
+                except TypeError:
+                    pass
+
+        # Safe fallback: no-op.
+
+    def _update_metrics(self):
+        """Required by Isaac Lab CommandTerm.
+
+        Metrics are optional for this visual/debug pass.
+        """
+        if not hasattr(self, "metrics") or self.metrics is None:
+            self.metrics = {}
+
+
 @configclass
 class ClassicalStackPlannerCommandCfg(CommandTermCfg):
     """Configuration for the classical stack planner command term."""

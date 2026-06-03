@@ -1,69 +1,96 @@
-"""Shared tabletop scene configuration matching the official OpenArm lift setup.
+"""Shared OpenArm CubeStack scene using the official OpenArm lift-table setup.
 
-The layout mirrors ``Isaac-Lift-Cube-OpenArm-Play-v0``: the OpenArm robot uses
-the official asset root pose, the standard SeattleLabTable USD is spawned in
-front of it, and DexCube objects sit at the lift task's cube height.
+This scene intentionally matches Isaac-Lift-Cube-OpenArm-Play-v0:
+- SeattleLabTable workbench
+- OpenArm mounted using OPENARM_UNI_CFG
+- DexCube objects in the official OpenArm reachable workspace
 """
-
-from __future__ import annotations
 
 import isaaclab.sim as sim_utils
 from isaaclab.assets import ArticulationCfg, AssetBaseCfg, RigidObjectCfg
-from isaaclab.markers.config import FRAME_MARKER_CFG
 from isaaclab.scene import InteractiveSceneCfg
-from isaaclab.sensors.frame_transformer.frame_transformer_cfg import FrameTransformerCfg
+from isaaclab.sensors import FrameTransformerCfg
 from isaaclab.sim.schemas.schemas_cfg import RigidBodyPropertiesCfg
 from isaaclab.sim.spawners.from_files.from_files_cfg import GroundPlaneCfg, UsdFileCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 from isaaclab_assets.robots.openarm import OPENARM_UNI_CFG
 
-# Official OpenArm lift-cube object settings.
-DEX_CUBE_USD_PATH: str = f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd"
-DEX_CUBE_SCALE: tuple[float, float, float] = (0.8, 0.8, 0.8)
+from isaaclab.markers.config import FRAME_MARKER_CFG
 
-# Official OpenArm lift-cube table settings.  Keep the table as the USD asset
-# used by Isaac-Lift-Cube-OpenArm instead of replacing it with a primitive box.
-OPENARM_LIFT_TABLE_USD_PATH: str = f"{ISAAC_NUCLEUS_DIR}/Props/Mounts/SeattleLabTable/table_instanceable.usd"
-OPENARM_LIFT_TABLE_POS: tuple[float, float, float] = (0.5, 0.0, 0.0)
-OPENARM_LIFT_TABLE_ROT: tuple[float, float, float, float] = (0.707, 0.0, 0.0, 0.707)
 
-NUM_CUBES: int = 5
-CUBE_NAMES: tuple[str, ...] = tuple(f"cube_{i}" for i in range(NUM_CUBES))
+# ---------------------------------------------------------------------
+# Constants used by CubeStack MDP code
+# ---------------------------------------------------------------------
 
-# The official OpenArm lift task spawns the scaled DexCube with its center at z=0.055.
-CUBE_SIZE: float = 0.05
-CUBE_HEIGHT: float = CUBE_SIZE
+CUBE_NAMES = ["cube_0", "cube_1", "cube_2", "cube_3", "cube_4"]
+NUM_CUBES: int = len(CUBE_NAMES)
+
+# DexCube is spawned at z=0.055 in the official OpenArm lift setup.
+# Keep this value so the cubes sit in the same workspace as Isaac-Lift-Cube-OpenArm.
 CUBE_TABLE_Z: float = 0.055
-CUBE_CENTER_Z: float = CUBE_TABLE_Z
+
+# Approximate scaled DexCube size. This is used by rewards/planner target heights.
+CUBE_SIZE: float = 0.05
+
+# Table top used by reward/planner logic. Since cube center is 0.055,
+# table contact height is approximately cube_center - cube_size / 2.
 TABLE_TOP_Z: float = CUBE_TABLE_Z - CUBE_SIZE / 2.0
 
-TABLETOP_CUBE_SPAWN_LOCAL_POSITIONS: tuple[tuple[float, float, float], ...] = (
-    (0.35, -0.16, CUBE_TABLE_Z),
-    (0.35, -0.08, CUBE_TABLE_Z),
-    (0.40, 0.00, CUBE_TABLE_Z),
-    (0.35, 0.08, CUBE_TABLE_Z),
-    (0.35, 0.16, CUBE_TABLE_Z),
-)
-TABLETOP_STACK_BASE_LOCAL_POS: tuple[float, float, float] = (0.55, 0.0, CUBE_TABLE_Z)
+# Kept only for old imports. Do not use this for robot placement.
+ROBOT_ON_TABLE_X: float = 0.0
+ROBOT_ON_TABLE_Y: float = 0.0
+ROBOT_ON_TABLE_Z: float = 0.0
 
-# Backwards-compatible names used by existing cube-stack modules.
-OPENARM_LIFT_CUBE_SPAWN_LOCAL_POSITIONS = TABLETOP_CUBE_SPAWN_LOCAL_POSITIONS
-OPENARM_LIFT_STACK_BASE_LOCAL_POS = TABLETOP_STACK_BASE_LOCAL_POS
+TABLETOP_STACK_BASE_LOCAL_POS = (0.55, 0.0, CUBE_TABLE_Z)
 
-_EE_MARKER_CFG = FRAME_MARKER_CFG.copy()
-_EE_MARKER_CFG.markers["frame"].scale = (0.1, 0.1, 0.1)
-_EE_MARKER_CFG.prim_path = "/Visuals/FrameTransformer"
+# ---------------------------------------------------------------------
+# Backward-compatible names for older LL/HL configs.
+# These do NOT create a custom cuboid table. They only prevent old imports
+# from crashing while the scene uses the official SeattleLabTable asset.
+# ---------------------------------------------------------------------
+
+TABLE_CENTER_X: float = 0.5
+TABLE_CENTER_Y: float = 0.0
+TABLE_SIZE_X: float = 0.85
+TABLE_SIZE_Y: float = 0.70
+
+# Kept only for compatibility with older imports.
+# Do not use this to spawn a cuboid table.
+TABLE_HEIGHT: float = 0.0
+
+ROBOT_BASE_ON_TABLE_X: float = ROBOT_ON_TABLE_X
+ROBOT_BASE_ON_TABLE_Y: float = ROBOT_ON_TABLE_Y
+ROBOT_BASE_ON_TABLE_Z: float = ROBOT_ON_TABLE_Z
+ROBOT_BASE_ON_TABLE_POS = (ROBOT_BASE_ON_TABLE_X, ROBOT_BASE_ON_TABLE_Y, ROBOT_BASE_ON_TABLE_Z)
 
 
-def make_dex_cube_cfg(name: str, pos: tuple[float, float, float]) -> RigidObjectCfg:
-    """Return a DexCube rigid object matching the official OpenArm lift task."""
+CUBE_INITIAL_LOCAL_POSITIONS = {
+    "cube_0": (0.35, -0.16, CUBE_TABLE_Z),
+    "cube_1": (0.35, -0.08, CUBE_TABLE_Z),
+    "cube_2": (0.40,  0.00, CUBE_TABLE_Z),
+    "cube_3": (0.35,  0.08, CUBE_TABLE_Z),
+    "cube_4": (0.35,  0.16, CUBE_TABLE_Z),
+}
+
+# Backward-compatible aliases for older HL/LL modules.
+# These names point to the new official-lift-style cube positions.
+TABLETOP_CUBE_SPAWN_LOCAL_POSITIONS = CUBE_INITIAL_LOCAL_POSITIONS
+TABLETOP_CUBE_SPAWN_POSITIONS = CUBE_INITIAL_LOCAL_POSITIONS
+TABLETOP_CUBE_INITIAL_LOCAL_POSITIONS = CUBE_INITIAL_LOCAL_POSITIONS
+STACK_BASE_LOCAL_POS = TABLETOP_STACK_BASE_LOCAL_POS
+STACK_TARGET_LOCAL_POS = TABLETOP_STACK_BASE_LOCAL_POS
+
+
+
+def _make_dex_cube(name: str, pos: tuple[float, float, float]) -> RigidObjectCfg:
+    """Create one DexCube object matching the official OpenArm lift object asset."""
     return RigidObjectCfg(
         prim_path=f"{{ENV_REGEX_NS}}/{name}",
         init_state=RigidObjectCfg.InitialStateCfg(pos=pos, rot=(1.0, 0.0, 0.0, 0.0)),
         spawn=UsdFileCfg(
-            usd_path=DEX_CUBE_USD_PATH,
-            scale=DEX_CUBE_SCALE,
+            usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd",
+            scale=(0.8, 0.8, 0.8),
             rigid_props=RigidBodyPropertiesCfg(
                 solver_position_iteration_count=16,
                 solver_velocity_iteration_count=1,
@@ -76,33 +103,49 @@ def make_dex_cube_cfg(name: str, pos: tuple[float, float, float]) -> RigidObject
     )
 
 
+# Official OpenArm EE frame marker setup.
+_marker_cfg = FRAME_MARKER_CFG.copy()
+_marker_cfg.markers["frame"].scale = (0.1, 0.1, 0.1)
+_marker_cfg.prim_path = "/Visuals/FrameTransformer"
+
+
 @configclass
 class OpenArmTabletopSceneCfg(InteractiveSceneCfg):
-    """Official OpenArm lift scene layout with robot, USD table, and EE frame."""
+    """Official OpenArm lift-style scene with SeattleLabTable and OpenArm."""
 
+    # OpenArm robot: do not manually raise it onto a fake platform.
     robot: ArticulationCfg = OPENARM_UNI_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
+    # Official Isaac-Lift-Cube-OpenArm table.
     table = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/Table",
-        init_state=AssetBaseCfg.InitialStateCfg(pos=OPENARM_LIFT_TABLE_POS, rot=OPENARM_LIFT_TABLE_ROT),
-        spawn=UsdFileCfg(usd_path=OPENARM_LIFT_TABLE_USD_PATH),
+        init_state=AssetBaseCfg.InitialStateCfg(
+            pos=(0.5, 0.0, 0.0),
+            rot=(0.707, 0.0, 0.0, 0.707),
+        ),
+        spawn=UsdFileCfg(
+            usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Mounts/SeattleLabTable/table_instanceable.usd"
+        ),
     )
 
+    # Official ground plane.
     plane = AssetBaseCfg(
         prim_path="/World/GroundPlane",
-        init_state=AssetBaseCfg.InitialStateCfg(pos=[0.0, 0.0, -1.05]),
+        init_state=AssetBaseCfg.InitialStateCfg(pos=(0.0, 0.0, -1.05)),
         spawn=GroundPlaneCfg(),
     )
 
+    # Official light.
     light = AssetBaseCfg(
         prim_path="/World/light",
         spawn=sim_utils.DomeLightCfg(color=(0.75, 0.75, 0.75), intensity=3000.0),
     )
 
+    # Official OpenArm EE frame names.
     ee_frame = FrameTransformerCfg(
         prim_path="{ENV_REGEX_NS}/Robot/openarm_link0",
-        debug_vis=False,
-        visualizer_cfg=_EE_MARKER_CFG,
+        debug_vis=True,
+        visualizer_cfg=_marker_cfg,
         target_frames=[
             FrameTransformerCfg.FrameCfg(
                 prim_path="{ENV_REGEX_NS}/Robot/openarm_ee_tcp",
@@ -114,15 +157,10 @@ class OpenArmTabletopSceneCfg(InteractiveSceneCfg):
 
 @configclass
 class OpenArmTabletopWithCubesSceneCfg(OpenArmTabletopSceneCfg):
-    """Official OpenArm lift-style tabletop scene with five DexCube objects."""
+    """OpenArm lift-style scene with five DexCube objects for CubeStack."""
 
-    cube_0 = make_dex_cube_cfg(CUBE_NAMES[0], TABLETOP_CUBE_SPAWN_LOCAL_POSITIONS[0])
-    cube_1 = make_dex_cube_cfg(CUBE_NAMES[1], TABLETOP_CUBE_SPAWN_LOCAL_POSITIONS[1])
-    cube_2 = make_dex_cube_cfg(CUBE_NAMES[2], TABLETOP_CUBE_SPAWN_LOCAL_POSITIONS[2])
-    cube_3 = make_dex_cube_cfg(CUBE_NAMES[3], TABLETOP_CUBE_SPAWN_LOCAL_POSITIONS[3])
-    cube_4 = make_dex_cube_cfg(CUBE_NAMES[4], TABLETOP_CUBE_SPAWN_LOCAL_POSITIONS[4])
-
-
-# Compatibility aliases for modules that adopted the lift-style scene names.
-OpenArmLiftStyleSceneCfg = OpenArmTabletopSceneCfg
-OpenArmLiftStyleWithCubesSceneCfg = OpenArmTabletopWithCubesSceneCfg
+    cube_0: RigidObjectCfg = _make_dex_cube("cube_0", CUBE_INITIAL_LOCAL_POSITIONS["cube_0"])
+    cube_1: RigidObjectCfg = _make_dex_cube("cube_1", CUBE_INITIAL_LOCAL_POSITIONS["cube_1"])
+    cube_2: RigidObjectCfg = _make_dex_cube("cube_2", CUBE_INITIAL_LOCAL_POSITIONS["cube_2"])
+    cube_3: RigidObjectCfg = _make_dex_cube("cube_3", CUBE_INITIAL_LOCAL_POSITIONS["cube_3"])
+    cube_4: RigidObjectCfg = _make_dex_cube("cube_4", CUBE_INITIAL_LOCAL_POSITIONS["cube_4"])
