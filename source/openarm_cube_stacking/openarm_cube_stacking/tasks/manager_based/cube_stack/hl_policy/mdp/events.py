@@ -1,7 +1,4 @@
-"""Reset events for HL policy environments.
-
-Handles robot reset, cube reset, and stack-target reset for the tabletop scene.
-"""
+"""Reset events for HL policy environments using the OpenArm lift-style scene."""
 
 from __future__ import annotations
 
@@ -12,10 +9,10 @@ import torch
 from isaaclab.assets import Articulation, RigidObject
 from isaaclab.managers import SceneEntityCfg
 
-from ...tabletop_scene_cfg import (
+from ...openarm_lift_style_scene_cfg import (
     CUBE_NAMES,
-    TABLETOP_CUBE_SPAWN_LOCAL_POSITIONS,
-    TABLETOP_STACK_BASE_LOCAL_POS,
+    OPENARM_LIFT_CUBE_SPAWN_LOCAL_POSITIONS,
+    OPENARM_LIFT_STACK_BASE_LOCAL_POS,
 )
 
 if TYPE_CHECKING:
@@ -33,7 +30,7 @@ def reset_robot_to_default(
     env_ids: torch.Tensor | None,
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
 ) -> None:
-    """Reset the OpenArm to its default state on the table."""
+    """Reset the OpenArm to its configured default lift-scene root and joints."""
     env_ids = _resolve_env_ids(env, env_ids)
     robot: Articulation = env.scene[asset_cfg.name]
 
@@ -49,14 +46,14 @@ def reset_robot_to_default(
     robot.reset(env_ids)
 
 
-def reset_cubes_tabletop(
+def reset_cubes_lift_style(
     env: ManagerBasedRLEnv,
     env_ids: torch.Tensor | None,
     cube_names: Sequence[str] = CUBE_NAMES,
-    local_positions: Sequence[Sequence[float]] = TABLETOP_CUBE_SPAWN_LOCAL_POSITIONS,
+    local_positions: Sequence[Sequence[float]] = OPENARM_LIFT_CUBE_SPAWN_LOCAL_POSITIONS,
     position_noise: float = 0.015,
 ) -> None:
-    """Reset cubes to tabletop positions with optional XY noise."""
+    """Reset cubes to OpenArm lift-style positions with optional XY noise."""
     env_ids = _resolve_env_ids(env, env_ids)
     origins = env.scene.env_origins[env_ids]
     local_pos = torch.tensor(local_positions, dtype=torch.float32, device=env.device)
@@ -82,10 +79,10 @@ def reset_cubes_tabletop(
         cube.reset(env_ids)
 
 
-def reset_stack_target_tabletop(
+def reset_stack_target_lift_style(
     env: ManagerBasedRLEnv,
     env_ids: torch.Tensor | None,
-    local_stack_base: Sequence[float] = TABLETOP_STACK_BASE_LOCAL_POS,
+    local_stack_base: Sequence[float] = OPENARM_LIFT_STACK_BASE_LOCAL_POS,
     position_noise: float = 0.0,
 ) -> None:
     """Reset the per-environment stack base position."""

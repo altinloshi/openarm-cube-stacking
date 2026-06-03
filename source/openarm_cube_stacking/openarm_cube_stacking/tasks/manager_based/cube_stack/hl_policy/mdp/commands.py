@@ -16,21 +16,32 @@ from typing import TYPE_CHECKING
 import torch
 
 from isaaclab.managers import CommandTerm, CommandTermCfg
+from isaaclab.markers import VisualizationMarkers
+from isaaclab.markers.config import FRAME_MARKER_CFG
 from isaaclab.sensors import FrameTransformer
 from isaaclab.utils import configclass
 from isaaclab.utils.math import subtract_frame_transforms
 
 from ..classical_stack_planner import ClassicalStackPlanner
-from ...tabletop_scene_cfg import (
+from ...openarm_lift_style_scene_cfg import (
     CUBE_NAMES,
     CUBE_SIZE,
     NUM_CUBES,
+    OPENARM_LIFT_STACK_BASE_LOCAL_POS,
     TABLE_TOP_Z,
-    TABLETOP_STACK_BASE_LOCAL_POS,
 )
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
+
+
+_TARGET_EE_MARKER_CFG = FRAME_MARKER_CFG.copy()
+_TARGET_EE_MARKER_CFG.markers["frame"].scale = (0.08, 0.08, 0.08)
+_TARGET_EE_MARKER_CFG.prim_path = "/Visuals/StackPlanner/TargetEE"
+
+_STACK_TARGET_MARKER_CFG = FRAME_MARKER_CFG.copy()
+_STACK_TARGET_MARKER_CFG.markers["frame"].scale = (0.10, 0.10, 0.10)
+_STACK_TARGET_MARKER_CFG.prim_path = "/Visuals/StackPlanner/StackTarget"
 
 
 class ClassicalStackPlannerCommand(CommandTerm):
@@ -73,6 +84,10 @@ class ClassicalStackPlannerCommand(CommandTerm):
 
         # Command buffer: pos(3) + quat(4) = 7, expressed in robot base frame
         self._command = torch.zeros(env.num_envs, 7, device=env.device)
+        self._target_pos_w = torch.zeros(env.num_envs, 3, device=env.device)
+        self._target_quat_w = torch.zeros(env.num_envs, 4, device=env.device)
+        self._target_quat_w[:, 0] = 1.0
+        self._stack_base_w = torch.zeros(env.num_envs, 3, device=env.device)
         # Initialise gripper command on env (start open = 1.0)
         env.gripper_cmd = torch.ones((env.num_envs, 1), device=env.device)
 
@@ -81,6 +96,10 @@ class ClassicalStackPlannerCommand(CommandTerm):
             list(cfg.stack_base_local[:3]), dtype=torch.float32, device=env.device
         )
         self._stack_base_local = _local.unsqueeze(0).expand(env.num_envs, -1).clone()
+
+        self._target_pose_visualizer = VisualizationMarkers(self.cfg.target_pose_visualizer_cfg)
+        self._stack_target_visualizer = VisualizationMarkers(self.cfg.stack_target_visualizer_cfg)
+        self._set_debug_vis_impl(self.cfg.debug_vis)
 
     # ─────────────────────────────────────────────────────────────────────────
     # CommandTerm interface
@@ -115,7 +134,10 @@ class ClassicalStackPlannerCommand(CommandTerm):
         )  # (N, num_cubes, 3)
 
         # ── stack base in world frame ────────────────────────────────────────
-        stack_base_w = env.scene.env_origins + self._stack_base_local
+        stack_base_w = getattr(env, "stack_base_pos_w", None)
+        if stack_base_w is None or stack_base_w.shape[0] != env.num_envs:
+            stack_base_w = env.scene.env_origins + self._stack_base_local
+        self._stack_base_w[:] = stack_base_w
 
         # ── run planner ──────────────────────────────────────────────────────
         target_pos_w, target_quat_w, target_grip = self._planner.compute(
@@ -125,6 +147,8 @@ class ClassicalStackPlannerCommand(CommandTerm):
             cube_pos_w=cube_pos_w,
             stack_base_pos_w=stack_base_w,
         )
+        self._target_pos_w[:] = target_pos_w
+        self._target_quat_w[:] = target_quat_w
 
         # ── convert world → robot base frame ─────────────────────────────────
         robot = env.scene["robot"]
@@ -144,7 +168,19 @@ class ClassicalStackPlannerCommand(CommandTerm):
         env.gripper_cmd[:, 0] = target_grip
 
     def _set_debug_vis_impl(self, debug_vis: bool) -> None:
-        pass
+        if not hasattr(self, "_target_pose_visualizer"):
+            return
+        self._target_pose_visualizer.set_visibility(debug_vis)
+        self._stack_target_visualizer.set_visibility(debug_vis)
+
+    def _debug_vis_callback(self, event) -> None:
+        del event
+        if not hasattr(self, "_target_pose_visualizer"):
+            return
+        stack_quat = torch.zeros((self._env.num_envs, 4), device=self._env.device)
+        stack_quat[:, 0] = 1.0
+        self._target_pose_visualizer.visualize(self._target_pos_w, self._target_quat_w)
+        self._stack_target_visualizer.visualize(self._stack_base_w, stack_quat)
 
 
 @configclass
@@ -160,7 +196,7 @@ class ClassicalStackPlannerCommandCfg(CommandTermCfg):
     table_top_z: float = TABLE_TOP_Z
 
     # Stack base position in LOCAL env frame (env origin added at runtime)
-    stack_base_local: tuple = TABLETOP_STACK_BASE_LOCAL_POS
+    stack_base_local: tuple = OPENARM_LIFT_STACK_BASE_LOCAL_POS
 
     # Planner stage tuning
     pre_grasp_height: float = 0.12
@@ -182,3 +218,5 @@ class ClassicalStackPlannerCommandCfg(CommandTermCfg):
     # CommandTermCfg: never auto-resample (planner owns its own timing)
     resampling_time_range: tuple = (float("inf"), float("inf"))
     debug_vis: bool = False
+    target_pose_visualizer_cfg = _TARGET_EE_MARKER_CFG
+    stack_target_visualizer_cfg = _STACK_TARGET_MARKER_CFG

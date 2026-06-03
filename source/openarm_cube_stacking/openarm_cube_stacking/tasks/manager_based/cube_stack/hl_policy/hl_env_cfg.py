@@ -1,8 +1,8 @@
 """High-level environment base config for HL play and eval.
 
 This environment has:
-- OpenArm mounted on the tabletop (same robot + table as LL)
-- Five cubes on the table
+- OpenArm fixed in the official lift-cube scene layout
+- Five DexCube objects near the standard lift-cube spawn area
 - ClassicalStackPlannerCommand providing EE target poses
 - LL-compatible observation space (so a frozen LL policy can be applied)
 
@@ -33,11 +33,11 @@ from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.utils import configclass
 
-from ..tabletop_scene_cfg import (
+from ..openarm_lift_style_scene_cfg import (
     CUBE_NAMES,
-    TABLETOP_CUBE_SPAWN_LOCAL_POSITIONS,
-    TABLETOP_STACK_BASE_LOCAL_POS,
-    OpenArmTabletopWithCubesSceneCfg,
+    OPENARM_LIFT_CUBE_SPAWN_LOCAL_POSITIONS,
+    OPENARM_LIFT_STACK_BASE_LOCAL_POS,
+    OpenArmLiftStyleWithCubesSceneCfg,
 )
 from . import mdp
 
@@ -48,8 +48,8 @@ from . import mdp
 
 
 @configclass
-class HLSceneCfg(OpenArmTabletopWithCubesSceneCfg):
-    """Full tabletop scene with robot + cubes for HL tasks."""
+class HLSceneCfg(OpenArmLiftStyleWithCubesSceneCfg):
+    """Official OpenArm lift-style scene with robot and five cubes."""
 
     def __post_init__(self) -> None:
         super().__post_init__()
@@ -148,19 +148,19 @@ class HLEventCfg:
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reset_stack_target = EventTerm(
-        func=mdp.reset_stack_target_tabletop,
+        func=mdp.reset_stack_target_lift_style,
         mode="reset",
         params={
-            "local_stack_base": TABLETOP_STACK_BASE_LOCAL_POS,
+            "local_stack_base": OPENARM_LIFT_STACK_BASE_LOCAL_POS,
             "position_noise": 0.02,
         },
     )
     reset_cubes = EventTerm(
-        func=mdp.reset_cubes_tabletop,
+        func=mdp.reset_cubes_lift_style,
         mode="reset",
         params={
             "cube_names": list(CUBE_NAMES),
-            "local_positions": TABLETOP_CUBE_SPAWN_LOCAL_POSITIONS,
+            "local_positions": OPENARM_LIFT_CUBE_SPAWN_LOCAL_POSITIONS,
             "position_noise": 0.015,
         },
     )

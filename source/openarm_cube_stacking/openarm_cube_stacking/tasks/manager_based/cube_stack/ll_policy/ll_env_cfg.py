@@ -49,16 +49,7 @@ from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.utils import configclass
 
-from ..tabletop_scene_cfg import (
-    CUBE_TABLE_Z,
-    ROBOT_ON_TABLE_X,
-    ROBOT_ON_TABLE_Y,
-    ROBOT_ON_TABLE_Z,
-    TABLE_CENTER_X,
-    TABLE_CENTER_Y,
-    TABLE_TOP_Z,
-    OpenArmTabletopSceneCfg,
-)
+from ..openarm_lift_style_scene_cfg import OpenArmLiftStyleSceneCfg
 from . import mdp
 
 
@@ -68,10 +59,10 @@ from . import mdp
 
 
 @configclass
-class LLSceneCfg(OpenArmTabletopSceneCfg):
-    """LL task scene: robot + table + ground + light + EE marker.
+class LLSceneCfg(OpenArmLiftStyleSceneCfg):
+    """LL task scene: official OpenArm lift layout with no cubes.
 
-    No cubes – the LL policy only needs the arm and environment geometry.
+    No cubes: the LL policy only needs the arm, standard table, and EE frame.
     """
 
     def __post_init__(self) -> None:
@@ -113,12 +104,7 @@ class LLActionsCfg:
 
 @configclass
 class LLCommandsCfg:
-    """EE pose command: uniform random pose above the tabletop.
-
-    Positions are expressed in the ROBOT BASE FRAME.
-    The robot base is at (ROBOT_ON_TABLE_X, ROBOT_ON_TABLE_Y, ROBOT_ON_TABLE_Z)
-    in the local env frame, so z=0 in base frame == table surface.
-    """
+    """EE pose command in the robot base frame for the lift-style workspace."""
 
     ee_pose = mdp.UniformPoseCommandCfg(
         asset_name="robot",
@@ -128,11 +114,10 @@ class LLCommandsCfg:
         resampling_time_range=(4.0, 4.0),
         debug_vis=False,
         ranges=mdp.UniformPoseCommandCfg.Ranges(
-            # Forward/lateral reach from robot base frame origin
-            pos_x=(0.10, 0.40),
+            # Covers the official lift cube spawn area and the stack target at x=0.55.
+            pos_x=(0.20, 0.60),
             pos_y=(-0.25, 0.25),
-            # z=0 is table level (robot base is on table top)
-            pos_z=(0.03, 0.35),
+            pos_z=(0.05, 0.40),
             # Mostly pointing downward with some roll/yaw variation
             roll=(-math.pi / 8, math.pi / 8),
             pitch=(math.pi * 0.7, math.pi),

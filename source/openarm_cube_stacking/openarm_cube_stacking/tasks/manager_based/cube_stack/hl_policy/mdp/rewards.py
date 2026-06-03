@@ -10,7 +10,12 @@ from typing import TYPE_CHECKING
 
 import torch
 
-from ...tabletop_scene_cfg import CUBE_NAMES, CUBE_SIZE, TABLE_TOP_Z, TABLETOP_STACK_BASE_LOCAL_POS
+from ...openarm_lift_style_scene_cfg import (
+    CUBE_NAMES,
+    CUBE_SIZE,
+    OPENARM_LIFT_STACK_BASE_LOCAL_POS,
+    TABLE_TOP_Z,
+)
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
@@ -28,7 +33,7 @@ def _stack_target_positions(env: "ManagerBasedRLEnv") -> torch.Tensor:
     stack_base = getattr(env, "stack_base_pos_w", None)
     if stack_base is None:
         local = torch.tensor(
-            list(TABLETOP_STACK_BASE_LOCAL_POS[:3]), dtype=torch.float32, device=env.device
+            list(OPENARM_LIFT_STACK_BASE_LOCAL_POS[:3]), dtype=torch.float32, device=env.device
         )
         stack_base = env.scene.env_origins + local.unsqueeze(0)
 

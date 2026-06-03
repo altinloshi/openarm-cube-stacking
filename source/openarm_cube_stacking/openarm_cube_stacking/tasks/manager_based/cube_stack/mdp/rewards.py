@@ -30,7 +30,7 @@ def reaching_current_cube(env: ManagerBasedRLEnv, std: float = 0.08) -> torch.Te
 
 
 def lifting_current_cube(env: ManagerBasedRLEnv, minimal_height: float = 0.04) -> torch.Tensor:
-    """Reward lifting the current cube above the tabletop."""
+    """Reward lifting the current cube above the lift-scene support surface."""
     cube_pos = _gather_current(_cube_positions_w(env), _current_cube_indices(env))
     lifted_height = cube_pos[:, 2] - (TABLE_TOP_Z + CUBE_SIZE / 2.0)
     return (lifted_height > minimal_height).to(torch.float32)
