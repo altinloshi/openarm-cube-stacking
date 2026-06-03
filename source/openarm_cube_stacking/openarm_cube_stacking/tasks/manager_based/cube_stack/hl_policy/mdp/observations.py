@@ -29,7 +29,7 @@ from ...ll_policy.mdp.observations import (  # noqa: F401
     target_ee_pose_command,
     target_gripper_cmd,
 )
-from ...tabletop_scene_cfg import CUBE_NAMES
+from ...openarm_lift_style_scene_cfg import CUBE_NAMES
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv

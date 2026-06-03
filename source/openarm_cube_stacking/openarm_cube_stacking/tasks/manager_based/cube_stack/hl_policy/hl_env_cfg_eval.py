@@ -19,7 +19,7 @@ from ..eval.scenarios import (
     reset_cubes_from_scenario,
     reset_stack_from_scenario,
 )
-from ..tabletop_scene_cfg import CUBE_NAMES
+from ..openarm_lift_style_scene_cfg import CUBE_NAMES
 from . import mdp
 from .hl_env_cfg import HLSceneCfg, OpenArmHLEnvCfg
 
@@ -68,10 +68,7 @@ class OpenArmEvalEnvCfg(OpenArmHLEnvCfg):
         super().__post_init__()
         self.scene.num_envs = 30
         self.scene.env_spacing = 2.5
-        # Deterministic: no noise in observations
         self.observations.policy.enable_corruption = False
         self.observations.stack_state.enable_corruption = False
-        # Planner command: no debug vis during eval
         self.commands.ee_pose.debug_vis = False
-        # Episode length long enough for full stack
         self.episode_length_s = 120.0

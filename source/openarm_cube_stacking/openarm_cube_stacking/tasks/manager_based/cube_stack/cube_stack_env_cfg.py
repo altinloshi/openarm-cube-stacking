@@ -1,3 +1,17 @@
+"""End-to-end cube stacking environment – Nepher-OpenArm-CubeStack-v0.
+
+Scene layout (Isaac-Lift-Cube-OpenArm-Play-v0 style)
+-----------------------------------------------------
+  OpenArm floor-mounted at env origin (no table).
+  Ground plane.
+  Five coloured cubes at z = 0.055 m, x ≈ 0.35–0.40 m.
+  Stack target at x = 0.55, z = 0.055 m.
+
+This environment trains an end-to-end RL policy for sequential five-cube
+stacking.  For the hierarchical (LL + HL) variant see the ll_policy and
+hl_policy sub-packages.
+"""
+
 from __future__ import annotations
 
 import isaaclab.sim as sim_utils
@@ -63,19 +77,12 @@ def _cube_cfg(name: str, pos: tuple[float, float, float], color: tuple[float, fl
 
 @configclass
 class OpenArmCubeStackSceneCfg(InteractiveSceneCfg):
-    """Scene with OpenArm, a table, and five stackable cubes."""
+    """Lift-style scene: floor-mounted OpenArm + five coloured cubes.
+
+    Matches the official Isaac-Lift-Cube-OpenArm-Play-v0 layout (no table).
+    """
 
     robot: ArticulationCfg = OPENARM_UNI_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
-
-    table = AssetBaseCfg(
-        prim_path="{ENV_REGEX_NS}/Table",
-        init_state=AssetBaseCfg.InitialStateCfg(pos=(0.55, 0.0, TABLE_HEIGHT / 2.0)),
-        spawn=sim_utils.CuboidCfg(
-            size=(0.85, 0.70, TABLE_HEIGHT),
-            collision_props=sim_utils.CollisionPropertiesCfg(),
-            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.35, 0.35, 0.35), metallic=0.0),
-        ),
-    )
 
     plane = AssetBaseCfg(
         prim_path="/World/GroundPlane",
@@ -247,4 +254,3 @@ class OpenArmCubeStackEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.physx.gpu_found_lost_aggregate_pairs_capacity = 1024 * 1024 * 4
         self.sim.physx.gpu_total_aggregate_pairs_capacity = 16 * 1024
         self.sim.physx.friction_correlation_distance = 0.00625
-

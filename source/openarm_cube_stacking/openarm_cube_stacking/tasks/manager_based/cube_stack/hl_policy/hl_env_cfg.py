@@ -1,10 +1,17 @@
 """High-level environment base config for HL play and eval.
 
 This environment has:
-- OpenArm mounted on the tabletop (same robot + table as LL)
-- Five cubes on the table
-- ClassicalStackPlannerCommand providing EE target poses
-- LL-compatible observation space (so a frozen LL policy can be applied)
+- OpenArm in the official lift-style scene (floor-mounted, no table).
+- Five DexCubes in reachable positions matching the OpenArm lift workspace.
+- ClassicalStackPlannerCommand providing EE target poses.
+- LL-compatible observation space (so a frozen LL policy can be applied).
+
+Scene layout (Isaac-Lift-Cube-OpenArm-Play-v0 style)
+-----------------------------------------------------
+  Robot base   : env origin (0, 0, 0) – floor level.
+  cube_0 … 4   : DexCube at z = 0.055 m, x ≈ 0.35–0.40 m.
+  Stack target : x = 0.55, y = 0.0, z = 0.055 m (first cube centre).
+  EE frame     : openarm_link0 → openarm_ee_tcp.
 
 Usage
 -----
@@ -22,8 +29,6 @@ planned trajectory.
 
 from __future__ import annotations
 
-import math
-
 from isaaclab.envs import ManagerBasedRLEnvCfg
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
@@ -33,11 +38,11 @@ from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.utils import configclass
 
-from ..tabletop_scene_cfg import (
+from ..openarm_lift_style_scene_cfg import (
     CUBE_NAMES,
-    TABLETOP_CUBE_SPAWN_LOCAL_POSITIONS,
-    TABLETOP_STACK_BASE_LOCAL_POS,
-    OpenArmTabletopWithCubesSceneCfg,
+    LIFT_STYLE_CUBE_SPAWN_POSITIONS,
+    LIFT_STYLE_STACK_BASE_LOCAL_POS,
+    OpenArmLiftStyleWithCubesSceneCfg,
 )
 from . import mdp
 
@@ -48,8 +53,8 @@ from . import mdp
 
 
 @configclass
-class HLSceneCfg(OpenArmTabletopWithCubesSceneCfg):
-    """Full tabletop scene with robot + cubes for HL tasks."""
+class HLSceneCfg(OpenArmLiftStyleWithCubesSceneCfg):
+    """Full lift-style scene with robot + five DexCubes for HL tasks."""
 
     def __post_init__(self) -> None:
         super().__post_init__()
@@ -151,7 +156,7 @@ class HLEventCfg:
         func=mdp.reset_stack_target_tabletop,
         mode="reset",
         params={
-            "local_stack_base": TABLETOP_STACK_BASE_LOCAL_POS,
+            "local_stack_base": LIFT_STYLE_STACK_BASE_LOCAL_POS,
             "position_noise": 0.02,
         },
     )
@@ -160,14 +165,14 @@ class HLEventCfg:
         mode="reset",
         params={
             "cube_names": list(CUBE_NAMES),
-            "local_positions": TABLETOP_CUBE_SPAWN_LOCAL_POSITIONS,
+            "local_positions": LIFT_STYLE_CUBE_SPAWN_POSITIONS,
             "position_noise": 0.015,
         },
     )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Rewards (light-weight monitoring; HL env is not trained directly)
+# Rewards (monitoring; HL env is not trained directly)
 # ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -215,7 +220,7 @@ class OpenArmHLEnvCfg(ManagerBasedRLEnvCfg):
 
     def __post_init__(self) -> None:
         self.decimation = 2
-        self.episode_length_s = 60.0  # longer episodes for full 5-cube stack
+        self.episode_length_s = 60.0
 
         self.sim.dt = 0.01
         self.sim.render_interval = self.decimation

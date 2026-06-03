@@ -13,30 +13,49 @@ LL Policy / Goal-conditioned EE tracker
     ↓  tracks target EE pose + gripper command
 Joint-position control + binary gripper
     ↓
-OpenArm mounted on tabletop
+OpenArm (floor-mounted, official lift-style scene)
 ```
 
 ### Visual Setup
 
-All hierarchical environments feature:
-- Multiple parallel Isaac Lab environments
-- One large table/workbench per environment
-- **OpenArm mounted on top of the table** (not floor-mounted)
-- Five cubes placed on the tabletop
-- Stack target position on the tabletop
-- Debug visualisation for EE target frame and planner waypoints
+All environments use the **official Isaac-Lift-Cube-OpenArm-Play-v0 scene layout**:
+
+- OpenArm **floor-mounted at env origin** (no table, no workbench).
+- Ground plane only.
+- Five DexCubes placed in front of the arm at z = 0.055 m (floor-resting height).
+- Stack target at x = 0.55 m, z = 0.055 m.
+- EE frame: `openarm_link0` → `openarm_ee_tcp`.
+- Debug visualisation for EE target frame and planner waypoints (play variants).
+
+Scene constants (`openarm_lift_style_scene_cfg.py`):
+```
+CUBE_HEIGHT       = 0.055 m   (DexCube edge length, scale 0.8)
+CUBE_GROUND_Z     = 0.055 m   (cube centre when resting on floor)
+PLANNER_FLOOR_Z   = 0.0275 m  (effective floor z for ClassicalStackPlanner)
+```
+
+Cube spawn positions (local env frame):
+```
+cube_0: (0.35, -0.16, 0.055)
+cube_1: (0.35, -0.08, 0.055)
+cube_2: (0.40,  0.00, 0.055)
+cube_3: (0.35,  0.08, 0.055)
+cube_4: (0.35,  0.16, 0.055)
+```
+
+Stack target: `(0.55, 0.0, 0.055)` → stacked cube centres at `0.055 + i × 0.055`.
 
 ### Environment Overview
 
 | Environment ID | Description |
 |---|---|
-| `Nepher-OpenArm-CubeStack-v0` | Original floor-mounted end-to-end baseline |
+| `Nepher-OpenArm-CubeStack-v0` | End-to-end baseline (lift-style scene) |
 | `Nepher-OpenArm-CubeStack-Play-v0` | Play variant of the baseline |
 | `Nepher-OpenArm-CubeStack-EndToEnd-v0` | EndToEnd alias (same as baseline) |
 | `Nepher-OpenArm-CubeStack-EndToEnd-Play-v0` | Play variant alias |
-| `Nepher-OpenArm-CubeStack-LL-v0` | **Low-level EE tracker** (tabletop, no cubes) |
+| `Nepher-OpenArm-CubeStack-LL-v0` | **Low-level EE tracker** (lift-style scene, no cubes) |
 | `Nepher-OpenArm-CubeStack-LL-Play-v0` | Play variant of LL tracker |
-| `Nepher-OpenArm-CubeStack-HL-Classical-Play-v0` | **Classical planner + LL policy** (tabletop + cubes) |
+| `Nepher-OpenArm-CubeStack-HL-Classical-Play-v0` | **Classical planner + LL policy** (lift-style + cubes) |
 | `Nepher-OpenArm-CubeStack-Eval-v0` | **Deterministic 30-scenario tournament evaluation** |
 
 ---
@@ -63,6 +82,23 @@ Expected output includes all eight environment IDs listed above.
 
 ---
 
+## Visual Verification
+
+Verify the scene matches the official OpenArm lift layout:
+
+```bash
+# Official OpenArm lift scene (reference)
+../IsaacLab/isaaclab.sh -p scripts/zero_agent.py --task=Isaac-Lift-Cube-OpenArm-Play-v0 --num_envs=1
+
+# LL policy scene (should look identical, no cubes)
+../IsaacLab/isaaclab.sh -p scripts/zero_agent.py --task=Nepher-OpenArm-CubeStack-LL-Play-v0 --num_envs=1
+
+# HL classical planner scene (should look identical + 5 DexCubes)
+../IsaacLab/isaaclab.sh -p scripts/zero_agent.py --task=Nepher-OpenArm-CubeStack-HL-Classical-Play-v0 --num_envs=1
+```
+
+---
+
 ## Project Layout
 
 ```
@@ -74,57 +110,56 @@ scripts/
     train.py
     play.py
     cli_args.py
-    export_policy.py          ← NEW: exports LL policy to best_policy/
+    export_policy.py
   eval/
-    evaluate_stack.py         ← NEW: deterministic 30-scenario evaluation
-    make_eval_report.py       ← NEW: human-readable report from results.json
+    evaluate_stack.py
+    make_eval_report.py
 
 source/openarm_cube_stacking/
   openarm_cube_stacking/
     tasks/manager_based/cube_stack/
-      tabletop_scene_cfg.py   ← NEW: shared scene constants + robot-on-table config
-      cube_stack_env_cfg.py   ← existing end-to-end baseline
+      openarm_lift_style_scene_cfg.py  ← canonical scene (robot + ground + DexCubes)
+      tabletop_scene_cfg.py            ← backward-compat shim (re-exports from above)
+      cube_stack_env_cfg.py            ← end-to-end baseline (lift-style scene)
       cube_stack_env_cfg_play.py
-      mdp/                    ← existing MDP modules
-      agents/                 ← existing agents
-      end_to_end/             ← NEW: EndToEnd environment aliases
+      mdp/                             ← end-to-end MDP modules
+      agents/
+      end_to_end/                      ← EndToEnd environment aliases
         cube_stack_env_cfg.py
         cube_stack_env_cfg_play.py
         mdp/  agents/
-      ll_policy/              ← NEW: goal-conditioned EE tracker
+      ll_policy/                       ← goal-conditioned EE tracker
         ll_env_cfg.py
         ll_env_cfg_play.py
         mdp/
-          commands.py         ← UniformPoseCommandCfg wrapper
-          observations.py     ← joint state, EE pose, command targets
-          rewards.py          ← EE tracking + gripper rewards
-          events.py           ← robot reset + gripper-cmd reset
-          terminations.py     ← timeout only
+          commands.py
+          observations.py
+          rewards.py
+          events.py
+          terminations.py
         agents/
           rsl_rl_ppo_cfg.py
-      hl_policy/              ← NEW: classical planner + LL execution
-        classical_stack_planner.py  ← vectorised torch planner
+      hl_policy/                       ← classical planner + LL execution
+        classical_stack_planner.py
         hl_env_cfg.py
         hl_env_cfg_play.py
         hl_env_cfg_eval.py
         mdp/
-          commands.py         ← ClassicalStackPlannerCommandCfg
-          observations.py     ← LL-compatible + cube state
-          events.py           ← robot + cube + stack resets
-          rewards.py          ← stack progress monitoring
-          terminations.py     ← timeout + planner done
+          commands.py                  ← ClassicalStackPlannerCommandCfg
+          observations.py
+          events.py
+          rewards.py
+          terminations.py
         agents/
           rsl_rl_ppo_cfg.py
-      eval/                   ← NEW: tournament evaluation framework
-        scenarios.py          ← 30 deterministic scenarios
-        metrics.py            ← StackMetricsAccumulator
+      eval/                            ← tournament evaluation framework
+        scenarios.py                   ← 30 deterministic scenarios
+        metrics.py
 ```
 
 ---
 
-## 1. End-to-End Baseline (existing task)
-
-The original floor-mounted five-cube stacking task remains unchanged.
+## 1. End-to-End Baseline
 
 ```bash
 # Train
@@ -150,34 +185,21 @@ The hierarchical pipeline splits the task into:
   pickup and placement sequences.  It reads cube positions from the scene
   and emits EE target poses consumed by the LL policy.
 
-### Tabletop Scene
+### Lift-Style Scene
 
-All hierarchical environments mount the robot ON TOP OF THE TABLE:
+All hierarchical environments use the official OpenArm lift-style scene:
 
 ```
-TABLE_HEIGHT = 0.20 m           # table top surface Z
-TABLE_TOP_Z  = 0.20 m
-ROBOT_ON_TABLE_Z = TABLE_TOP_Z  # robot base at table surface
-CUBE_TABLE_Z = 0.225 m          # cube centre when resting on table
+CUBE_GROUND_Z  = 0.055 m    (cube centre on floor)
+CUBE_HEIGHT    = 0.055 m    (DexCube edge length at scale 0.8)
+PLANNER_FLOOR_Z = 0.0275 m  (effective floor for the planner formula)
 ```
 
-Constants live in `tabletop_scene_cfg.py`.  To tune the robot-table offset:
-
-```python
-OPENARM_BASE_Z_OFFSET = 0.0  # adjust if robot floats/sinks
-```
+Constants live in `openarm_lift_style_scene_cfg.py`.
 
 ---
 
 ## 3. Training the LL Policy
-
-The LL task trains a goal-conditioned EE tracker.  The policy observes:
-- Robot joint positions and velocities
-- Current EE pose in robot base frame
-- Commanded target EE pose (sampled uniformly above the table)
-- Binary gripper command (sampled once per episode)
-- Current gripper opening (normalised)
-- Last action
 
 ```bash
 python scripts/rsl_rl/train.py \
@@ -196,31 +218,14 @@ python scripts/rsl_rl/play.py --task=Nepher-OpenArm-CubeStack-LL-Play-v0
 
 ## 4. Exporting the LL Policy
 
-After training, export the checkpoint to `best_policy/`:
-
 ```bash
 python scripts/rsl_rl/export_policy.py \
     --task=Nepher-OpenArm-CubeStack-LL-Play-v0
 ```
 
-This copies the latest checkpoint to:
-```
-best_policy/best_policy.pt
-best_policy/exported/policy.pt      ← TorchScript
-best_policy/exported/policy.onnx    ← ONNX (opset 17)
-```
-
 ---
 
 ## 5. Running the HL Classical Stack Planner
-
-The HL play environment loads the frozen LL policy and drives it with the
-classical planner.  The planner progresses through stages:
-
-```
-PRE_GRASP → DESCEND → GRASP → LIFT →
-MOVE_ABOVE_STACK → LOWER_TO_STACK → RELEASE → RETRACT → NEXT_CUBE → DONE
-```
 
 ```bash
 python scripts/rsl_rl/play.py \
@@ -229,19 +234,9 @@ python scripts/rsl_rl/play.py \
     --video --video_length=600
 ```
 
-The play script loads the LL weights, creates the HL env (with classical
-planner command term), and applies the LL actor to produce joint actions.
-
 ---
 
 ## 6. Deterministic Evaluation (30-Scenario Tournament)
-
-Each of the 30 evaluation scenarios fixes:
-- Five cube initial positions on the table
-- Stack target XY position
-- Optional per-cube yaw offsets
-
-Environment `i` uses scenario `i % 30` (deterministic for any number of envs).
 
 ```bash
 python scripts/eval/evaluate_stack.py \
@@ -250,41 +245,11 @@ python scripts/eval/evaluate_stack.py \
     --episodes=30
 ```
 
-Results are written to:
-```
-logs/eval/openarm_cube_stack/<timestamp>/results.json
-```
-
-Example output:
-```json
-{
-  "task": "Nepher-OpenArm-CubeStack-Eval-v0",
-  "num_envs": 30,
-  "episodes": 30,
-  "full_stack_success_rate": 0.0,
-  "average_cubes_stacked": 0.0,
-  "per_cube_success_rate": [0, 0, 0, 0, 0],
-  "cube_drop_rate": 0.0,
-  "stack_collapse_rate": 0.0,
-  "mean_final_stack_error": 0.0,
-  "mean_episode_length_s": 0.0,
-  "mean_grasp_retries": 0.0,
-  "timeout_rate": 0.0
-}
-```
-
-### Generate a Human-Readable Report
-
-```bash
-python scripts/eval/make_eval_report.py \
-    logs/eval/openarm_cube_stack/
-```
-
 ---
 
 ## 7. Reproducing 30-Scenario Tournament Scoring
 
-1. Train the LL policy to convergence:
+1. Train LL to convergence:
    ```bash
    python scripts/rsl_rl/train.py \
        --task=Nepher-OpenArm-CubeStack-LL-v0 \
@@ -340,12 +305,6 @@ python scripts/zero_agent.py --task=Nepher-OpenArm-CubeStack-HL-Classical-Play-v
 | `mean_episode_length_s` | Mean episode duration (s) |
 | `mean_grasp_retries` | Mean number of grasp retries per episode |
 | `timeout_rate` | Fraction of episodes that hit the time limit |
-
-A cube is considered **successfully stacked** when:
-- XY error to target < 0.04 m
-- Height error to expected stack level < 0.02 m
-- Linear velocity < 0.05 m/s
-- All cubes below it remain stable
 
 ---
 

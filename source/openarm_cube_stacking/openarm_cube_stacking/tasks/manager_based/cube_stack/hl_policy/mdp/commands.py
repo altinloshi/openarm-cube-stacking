@@ -21,12 +21,12 @@ from isaaclab.utils import configclass
 from isaaclab.utils.math import subtract_frame_transforms
 
 from ..classical_stack_planner import ClassicalStackPlanner
-from ...tabletop_scene_cfg import (
+from ...openarm_lift_style_scene_cfg import (
     CUBE_NAMES,
     CUBE_SIZE,
     NUM_CUBES,
     TABLE_TOP_Z,
-    TABLETOP_STACK_BASE_LOCAL_POS,
+    LIFT_STYLE_STACK_BASE_LOCAL_POS,
 )
 
 if TYPE_CHECKING:
@@ -76,7 +76,8 @@ class ClassicalStackPlannerCommand(CommandTerm):
         # Initialise gripper command on env (start open = 1.0)
         env.gripper_cmd = torch.ones((env.num_envs, 1), device=env.device)
 
-        # Stack base local position (env origins added at runtime each step)
+        # Stack base in local env frame (env origins added at runtime each step).
+        # Initialised from cfg; may be overridden by reset_stack_target_tabletop.
         _local = torch.tensor(
             list(cfg.stack_base_local[:3]), dtype=torch.float32, device=env.device
         )
@@ -159,8 +160,9 @@ class ClassicalStackPlannerCommandCfg(CommandTermCfg):
     cube_size: float = CUBE_SIZE
     table_top_z: float = TABLE_TOP_Z
 
-    # Stack base position in LOCAL env frame (env origin added at runtime)
-    stack_base_local: tuple = TABLETOP_STACK_BASE_LOCAL_POS
+    # Stack base position in LOCAL env frame (env origin added at runtime).
+    # Matches the official OpenArm lift-style layout.
+    stack_base_local: tuple = LIFT_STYLE_STACK_BASE_LOCAL_POS
 
     # Planner stage tuning
     pre_grasp_height: float = 0.12

@@ -13,18 +13,20 @@ if TYPE_CHECKING:
 
 
 NUM_CUBES = 5
-CUBE_SIZE = 0.05
-TABLE_HEIGHT = 0.20
-TABLE_TOP_Z = TABLE_HEIGHT
-CUBE_CENTER_Z = TABLE_TOP_Z + CUBE_SIZE / 2.0
+# DexCube height (edge length) and floor-resting centre z.
+# Matches the official OpenArm lift-style scene (floor-mounted robot, no table).
+CUBE_SIZE = 0.055
+TABLE_HEIGHT = 0.0   # no table; kept for import compatibility
+TABLE_TOP_Z = 0.0    # floor level
+CUBE_CENTER_Z = 0.055  # cube centre z when resting on floor
 CUBE_NAMES = tuple(f"cube_{i}" for i in range(NUM_CUBES))
 
 DEFAULT_CUBE_SPAWN_LOCAL_POSITIONS = (
-    (0.34, -0.18, CUBE_CENTER_Z),
-    (0.34, -0.09, CUBE_CENTER_Z),
-    (0.34, 0.00, CUBE_CENTER_Z),
-    (0.34, 0.09, CUBE_CENTER_Z),
-    (0.34, 0.18, CUBE_CENTER_Z),
+    (0.35, -0.16, CUBE_CENTER_Z),
+    (0.35, -0.08, CUBE_CENTER_Z),
+    (0.40,  0.00, CUBE_CENTER_Z),
+    (0.35,  0.08, CUBE_CENTER_Z),
+    (0.35,  0.16, CUBE_CENTER_Z),
 )
 DEFAULT_STACK_BASE_LOCAL_POS = (0.55, 0.0, CUBE_CENTER_Z)
 

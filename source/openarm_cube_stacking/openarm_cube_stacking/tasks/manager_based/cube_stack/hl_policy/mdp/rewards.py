@@ -10,7 +10,12 @@ from typing import TYPE_CHECKING
 
 import torch
 
-from ...tabletop_scene_cfg import CUBE_NAMES, CUBE_SIZE, TABLE_TOP_Z, TABLETOP_STACK_BASE_LOCAL_POS
+from ...openarm_lift_style_scene_cfg import (
+    CUBE_NAMES,
+    CUBE_SIZE,
+    TABLE_TOP_Z,
+    LIFT_STYLE_STACK_BASE_LOCAL_POS as TABLETOP_STACK_BASE_LOCAL_POS,
+)
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
