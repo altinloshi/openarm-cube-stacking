@@ -60,9 +60,9 @@ from . import mdp
 
 @configclass
 class LLSceneCfg(OpenArmTabletopSceneCfg):
-    """LL task scene: official OpenArm lift layout with no cubes.
+    """LL task scene: official OpenArm lift USD table layout with no cubes.
 
-    No cubes: the LL policy only needs the arm, standard table, and EE frame.
+    No cubes: the LL policy only needs the arm, OpenArm lift USD table, and EE frame.
     """
 
     def __post_init__(self) -> None:

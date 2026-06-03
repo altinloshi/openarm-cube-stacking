@@ -1,8 +1,8 @@
 """Shared tabletop scene configuration matching the official OpenArm lift setup.
 
 The layout mirrors ``Isaac-Lift-Cube-OpenArm-Play-v0``: the OpenArm robot uses
-the official asset root pose, the standard black SeattleLabTable USD is spawned
-in front of it, and DexCube objects sit at the lift task's cube height.
+the official asset root pose, the standard SeattleLabTable USD is spawned in
+front of it, and DexCube objects sit at the lift task's cube height.
 """
 
 from __future__ import annotations
@@ -21,6 +21,12 @@ from isaaclab_assets.robots.openarm import OPENARM_UNI_CFG
 # Official OpenArm lift-cube object settings.
 DEX_CUBE_USD_PATH: str = f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd"
 DEX_CUBE_SCALE: tuple[float, float, float] = (0.8, 0.8, 0.8)
+
+# Official OpenArm lift-cube table settings.  Keep the table as the USD asset
+# used by Isaac-Lift-Cube-OpenArm instead of replacing it with a primitive box.
+OPENARM_LIFT_TABLE_USD_PATH: str = f"{ISAAC_NUCLEUS_DIR}/Props/Mounts/SeattleLabTable/table_instanceable.usd"
+OPENARM_LIFT_TABLE_POS: tuple[float, float, float] = (0.5, 0.0, 0.0)
+OPENARM_LIFT_TABLE_ROT: tuple[float, float, float, float] = (0.707, 0.0, 0.0, 0.707)
 
 NUM_CUBES: int = 5
 CUBE_NAMES: tuple[str, ...] = tuple(f"cube_{i}" for i in range(NUM_CUBES))
@@ -72,14 +78,14 @@ def make_dex_cube_cfg(name: str, pos: tuple[float, float, float]) -> RigidObject
 
 @configclass
 class OpenArmTabletopSceneCfg(InteractiveSceneCfg):
-    """Official OpenArm lift scene layout with robot, SeattleLabTable, and EE frame."""
+    """Official OpenArm lift scene layout with robot, USD table, and EE frame."""
 
     robot: ArticulationCfg = OPENARM_UNI_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
     table = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/Table",
-        init_state=AssetBaseCfg.InitialStateCfg(pos=[0.5, 0.0, 0.0], rot=[0.707, 0.0, 0.0, 0.707]),
-        spawn=UsdFileCfg(usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Mounts/SeattleLabTable/table_instanceable.usd"),
+        init_state=AssetBaseCfg.InitialStateCfg(pos=OPENARM_LIFT_TABLE_POS, rot=OPENARM_LIFT_TABLE_ROT),
+        spawn=UsdFileCfg(usd_path=OPENARM_LIFT_TABLE_USD_PATH),
     )
 
     plane = AssetBaseCfg(
