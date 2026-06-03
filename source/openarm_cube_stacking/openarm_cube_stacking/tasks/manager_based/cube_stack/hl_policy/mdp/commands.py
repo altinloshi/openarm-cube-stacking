@@ -20,7 +20,6 @@ from typing import TYPE_CHECKING
 
 import torch
 
-import isaaclab.sim as sim_utils
 from isaaclab.assets import Articulation, RigidObject
 from isaaclab.managers import CommandTerm, CommandTermCfg
 from isaaclab.markers import VisualizationMarkers
@@ -33,7 +32,6 @@ from ...tabletop import (
     CUBE_NAMES,
     CUBE_SIZE,
     DEFAULT_STACK_BASE_LOCAL_POS,
-    NUM_CUBES,
     TABLE_TOP_Z,
 )
 from ..classical_stack_planner import STAGE_NAMES, ClassicalStackPlanner
@@ -48,7 +46,8 @@ def make_target_marker_cfg() -> VisualizationMarkersCfg:
     """Frame marker visualising the planner's current EE target pose."""
     cfg = FRAME_MARKER_CFG.copy()
     cfg.markers["frame"].scale = (0.06, 0.06, 0.06)
-    return cfg.replace(prim_path="/Visuals/HL/planner_target")
+    cfg.prim_path = "/Visuals/HL/planner_target"
+    return cfg
 
 
 HL_TARGET_MARKER_CFG = make_target_marker_cfg()

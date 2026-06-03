@@ -4,8 +4,8 @@ from __future__ import annotations
 
 This module centralises every geometric constant (table height, robot base
 offset, cube size, cube spawn layout, stack-target location) so the whole
-hierarchical pipeline (``end_to_end`` baseline excluded, ``ll_policy``,
-``hl_policy`` and ``eval``) shares one consistent tabletop layout.
+hierarchical pipeline (``ll_policy``, ``hl_policy`` and ``eval``) shares one
+consistent tabletop layout. The ``end_to_end`` baseline keeps its own scene.
 
 Visual layout (matches the tournament reference screenshot)
 -----------------------------------------------------------
@@ -25,6 +25,8 @@ Body / joint names (must match ``OPENARM_UNI_CFG`` and the current repo)
 * End-effector body: ``openarm_hand``
 * TCP debug frame  : ``openarm_ee_tcp``
 """
+
+import copy
 
 import isaaclab.sim as sim_utils
 from isaaclab.assets import ArticulationCfg, AssetBaseCfg, RigidObjectCfg
@@ -106,6 +108,11 @@ def _ee_marker_cfg():
 def make_tabletop_robot(high_pd: bool = False) -> ArticulationCfg:
     """Return an OpenArm articulation config mounted on top of the table.
 
+    The robot base origin (``openarm_link0``) is placed at
+    ``ROBOT_BASE_ON_TABLE_POS`` so the arm sits on the tabletop. A deep copy is
+    used so the shared ``OPENARM_UNI_CFG`` (and its ``init_state``) is never
+    mutated.
+
     Args:
         high_pd: If ``True`` use ``OPENARM_UNI_HIGH_PD_CFG`` (stiffer gains, gravity
             disabled) which is required for accurate differential-IK tracking.
@@ -118,9 +125,9 @@ def make_tabletop_robot(high_pd: bool = False) -> ArticulationCfg:
     else:
         base = OPENARM_UNI_CFG
 
-    robot = base.replace(prim_path="{ENV_REGEX_NS}/Robot")
-    # Place the robot base on the tabletop. ``init_state`` is deep-copied by
-    # ``replace`` so mutating ``pos`` here does not affect the shared cfg.
+    robot = copy.deepcopy(base)
+    robot.prim_path = "{ENV_REGEX_NS}/Robot"
+    # Mount the base on the tabletop. The joint_pos defaults are preserved.
     robot.init_state.pos = ROBOT_BASE_ON_TABLE_POS
     return robot
 
@@ -167,7 +174,9 @@ class OpenArmTabletopSceneCfg(InteractiveSceneCfg):
     EE-tracking policy which does not need cubes.
     """
 
-    # OpenArm robot mounted on the tabletop (joint-position control variant).
+    # OpenArm robot mounted on the tabletop (joint-position control variant by
+    # default; envs that need differential IK swap in the high-PD variant in
+    # their ``__post_init__``).
     robot: ArticulationCfg = make_tabletop_robot(high_pd=False)
 
     # Large table/workbench, one per environment. Bottom on the floor, top at
