@@ -10,7 +10,7 @@ from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.utils import configclass
 
 from . import mdp
-from .openarm_lift_style_scene_cfg import OpenArmLiftStyleWithCubesSceneCfg
+from .tabletop_scene_cfg import OpenArmTabletopWithCubesSceneCfg
 from .mdp.observations import (
     CUBE_NAMES,
     DEFAULT_CUBE_SPAWN_LOCAL_POSITIONS,
@@ -24,7 +24,7 @@ from .mdp.observations import (
 
 
 @configclass
-class OpenArmCubeStackSceneCfg(OpenArmLiftStyleWithCubesSceneCfg):
+class OpenArmCubeStackSceneCfg(OpenArmTabletopWithCubesSceneCfg):
     """OpenArm lift-style scene with five DexCube objects for stacking."""
 
 
