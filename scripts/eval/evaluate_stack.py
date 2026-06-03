@@ -74,7 +74,6 @@ from openarm_cube_stacking.tasks.manager_based.cube_stack.eval.metrics import ( 
 from openarm_cube_stacking.tasks.manager_based.cube_stack.openarm_lift_style_scene_cfg import (  # noqa: E402
     CUBE_NAMES,
     CUBE_SIZE,
-    TABLE_TOP_Z,
 )
 
 
