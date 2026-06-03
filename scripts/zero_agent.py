@@ -8,7 +8,7 @@ from isaaclab.app import AppLauncher
 parser = argparse.ArgumentParser(description="Zero-action agent for the OpenArm cube stacking task.")
 parser.add_argument("--disable_fabric", action="store_true", default=False, help="Disable fabric and use USD I/O.")
 parser.add_argument("--num_envs", type=int, default=None, help="Number of environments to simulate.")
-parser.add_argument("--task", type=str, default="Nepher-OpenArm-CubeStack-v0", help="Gym task ID.")
+parser.add_argument("--task", type=str, default="Nepher-OpenArm-CubeStack-LL-Play-v0", help="Gym task ID.")
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
 

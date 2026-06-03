@@ -13,7 +13,7 @@ import cli_args  # isort: skip
 parser = argparse.ArgumentParser(description="Play an RSL-RL policy for OpenArm cube stacking.")
 parser.add_argument("--disable_fabric", action="store_true", default=False, help="Disable fabric and use USD I/O.")
 parser.add_argument("--num_envs", type=int, default=None, help="Number of environments to simulate.")
-parser.add_argument("--task", type=str, default="Nepher-OpenArm-CubeStack-Play-v0", help="Gym task ID.")
+parser.add_argument("--task", type=str, default="Nepher-OpenArm-CubeStack-LL-Play-v0", help="Gym task ID.")
 parser.add_argument(
     "--agent",
     type=str,

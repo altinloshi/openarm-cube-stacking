@@ -30,10 +30,6 @@ All hierarchical environments feature:
 
 | Environment ID | Description |
 |---|---|
-| `Nepher-OpenArm-CubeStack-v0` | End-to-end baseline in the lift-style scene |
-| `Nepher-OpenArm-CubeStack-Play-v0` | Play variant of the baseline |
-| `Nepher-OpenArm-CubeStack-EndToEnd-v0` | EndToEnd alias (same as baseline) |
-| `Nepher-OpenArm-CubeStack-EndToEnd-Play-v0` | Play variant alias |
 | `Nepher-OpenArm-CubeStack-LL-v0` | **Low-level EE tracker** (lift-style scene, no cubes) |
 | `Nepher-OpenArm-CubeStack-LL-Play-v0` | Play variant of LL tracker |
 | `Nepher-OpenArm-CubeStack-HL-Classical-Play-v0` | **Classical planner + LL policy** (lift-style scene + cubes) |
@@ -123,17 +119,17 @@ source/openarm_cube_stacking/
 
 ---
 
-## 1. End-to-End Baseline (existing task)
+## 1. Low-Level Policy
 
-The original five-cube stacking task IDs remain available, but now use the same
-official OpenArm lift-style visual setup as the hierarchical tasks.
+The low-level (LL) policy learns goal-conditioned end-effector tracking in the
+official OpenArm lift-style scene.
 
 ```bash
 # Train
-python scripts/rsl_rl/train.py --task=Nepher-OpenArm-CubeStack-v0 --headless
+python scripts/rsl_rl/train.py --task=Nepher-OpenArm-CubeStack-LL-v0 --headless
 
 # Play
-python scripts/rsl_rl/play.py --task=Nepher-OpenArm-CubeStack-Play-v0
+python scripts/rsl_rl/play.py --task=Nepher-OpenArm-CubeStack-LL-Play-v0
 ```
 
 ---

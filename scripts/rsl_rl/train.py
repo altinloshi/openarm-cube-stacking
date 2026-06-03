@@ -12,7 +12,7 @@ import cli_args  # isort: skip
 
 parser = argparse.ArgumentParser(description="Train an RSL-RL agent for OpenArm cube stacking.")
 parser.add_argument("--num_envs", type=int, default=None, help="Number of environments to simulate.")
-parser.add_argument("--task", type=str, default="Nepher-OpenArm-CubeStack-v0", help="Gym task ID.")
+parser.add_argument("--task", type=str, default="Nepher-OpenArm-CubeStack-LL-v0", help="Gym task ID.")
 parser.add_argument(
     "--agent",
     type=str,
