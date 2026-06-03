@@ -49,7 +49,7 @@ from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.utils import configclass
 
-from ..openarm_lift_style_scene_cfg import OpenArmLiftStyleSceneCfg
+from ..tabletop_scene_cfg import OpenArmTabletopSceneCfg
 from . import mdp
 
 
@@ -59,7 +59,7 @@ from . import mdp
 
 
 @configclass
-class LLSceneCfg(OpenArmLiftStyleSceneCfg):
+class LLSceneCfg(OpenArmTabletopSceneCfg):
     """LL task scene: official OpenArm lift layout with no cubes.
 
     No cubes: the LL policy only needs the arm, standard table, and EE frame.
