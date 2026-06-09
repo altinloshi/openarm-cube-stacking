@@ -1,3 +1,8 @@
+# Copyright (c) 2025-2026, Nepher Robotics
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Observation terms for the HL policy environment.
 
 The HL-play/eval environments use the SAME policy-level observations as the LL

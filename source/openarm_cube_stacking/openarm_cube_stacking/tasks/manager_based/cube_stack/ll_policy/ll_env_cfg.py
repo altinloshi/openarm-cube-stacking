@@ -1,3 +1,8 @@
+# Copyright (c) 2025-2026, Nepher Robotics
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Low-level policy environment config for Nepher-OpenArm-CubeStack-LL-v0.
 
 Purpose

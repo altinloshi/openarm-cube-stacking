@@ -1,3 +1,10 @@
+# Copyright (c) 2025-2026, Nepher Robotics
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+"""CLI argument helpers for RSL-RL scripts."""
+
 from __future__ import annotations
 
 import argparse

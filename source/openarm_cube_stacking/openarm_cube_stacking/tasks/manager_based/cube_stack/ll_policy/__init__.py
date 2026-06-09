@@ -1,3 +1,8 @@
+# Copyright (c) 2025-2026, Nepher Robotics
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 """LL policy sub-package: goal-conditioned EE tracking for OpenArm."""
 
 import gymnasium as gym

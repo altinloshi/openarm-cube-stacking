@@ -1,3 +1,8 @@
+# Copyright (c) 2025-2026, Nepher Robotics
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Evaluation environment config for Nepher-OpenArm-CubeStack-Eval-v0.
 
 Deterministic, reproducible tournament scenarios:

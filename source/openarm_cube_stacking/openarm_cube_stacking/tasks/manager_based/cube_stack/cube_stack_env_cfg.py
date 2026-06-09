@@ -1,3 +1,10 @@
+# Copyright (c) 2025-2026, Nepher Robotics
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+"""End-to-end baseline environment config for the OpenArm cube stacking task."""
+
 from __future__ import annotations
 
 from isaaclab.envs import ManagerBasedRLEnvCfg

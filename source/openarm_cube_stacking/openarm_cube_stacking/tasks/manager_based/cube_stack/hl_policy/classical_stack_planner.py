@@ -1,3 +1,8 @@
+# Copyright (c) 2025-2026, Nepher Robotics
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Vectorised classical planner for five-cube sequential stacking.
 
 This module provides :class:`ClassicalStackPlanner`, a pure-PyTorch planner

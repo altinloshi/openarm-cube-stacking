@@ -1,3 +1,8 @@
+# Copyright (c) 2025-2026, Nepher Robotics
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Reset events for the LL policy environment.
 
 The LL task only needs the robot reset and the gripper-command reset.

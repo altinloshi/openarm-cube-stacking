@@ -1,3 +1,10 @@
+# Copyright (c) 2025-2026, Nepher Robotics
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+"""Reward terms for the OpenArm cube stacking task."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
