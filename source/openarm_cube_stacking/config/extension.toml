@@ -1,0 +1,23 @@
+[package]
+
+version = "0.1.0"
+category = "isaaclab"
+readme  = "README.md"
+
+title       = "OpenArm Cube Stacking — 5-Cube Hierarchical Stacking"
+author      = "Nepher Robotics"
+maintainer  = "Nepher Robotics"
+description = "Hierarchical OpenArm 5-cube stacking: Low-Level (LL) goal-conditioned EE tracking policy and High-Level (HL) classical state-machine planner."
+repository  = "https://github.com/nepher-ai/task_franka_cube_stacking"
+keywords    = ["openarm", "cube-stacking", "hierarchical", "goal-conditioned", "isaaclab", "classical-planner"]
+
+[dependencies]
+"isaaclab"        = {}
+"isaaclab_assets" = {}
+"isaaclab_rl"     = {}
+"isaaclab_tasks"  = {}
+
+[[python.module]]
+name = "openarm_cube_stacking"
+
+[isaac_lab_settings]

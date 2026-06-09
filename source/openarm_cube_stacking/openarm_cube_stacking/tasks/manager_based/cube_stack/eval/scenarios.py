@@ -1,3 +1,8 @@
+# Copyright (c) 2025-2026, Nepher Robotics
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 """30 deterministic evaluation scenarios for tournament scoring.
 
 Each scenario fixes:

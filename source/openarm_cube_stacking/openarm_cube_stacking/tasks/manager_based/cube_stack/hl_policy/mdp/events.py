@@ -1,3 +1,8 @@
+# Copyright (c) 2025-2026, Nepher Robotics
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Reset events for HL policy environments using the OpenArm lift-style scene."""
 
 from __future__ import annotations

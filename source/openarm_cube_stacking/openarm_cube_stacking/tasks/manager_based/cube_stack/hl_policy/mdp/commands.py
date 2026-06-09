@@ -1,3 +1,8 @@
+# Copyright (c) 2025-2026, Nepher Robotics
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Isaac Lab command term that wraps ClassicalStackPlanner.
 
 ClassicalStackPlannerCommand is a CommandTerm whose output is the planned

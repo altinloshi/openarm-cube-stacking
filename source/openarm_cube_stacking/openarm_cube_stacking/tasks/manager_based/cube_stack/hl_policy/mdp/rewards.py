@@ -1,3 +1,8 @@
+# Copyright (c) 2025-2026, Nepher Robotics
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Reward terms for the HL play/eval environment.
 
 In HL mode the LL policy executes the motion; these rewards measure

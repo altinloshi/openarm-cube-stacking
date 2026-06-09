@@ -1,3 +1,8 @@
+# Copyright (c) 2025-2026, Nepher Robotics
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Play an RSL-RL checkpoint for the OpenArm cube stacking task."""
 
 import argparse

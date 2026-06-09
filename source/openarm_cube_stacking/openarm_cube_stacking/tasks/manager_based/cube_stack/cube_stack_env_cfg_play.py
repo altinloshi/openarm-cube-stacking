@@ -1,3 +1,10 @@
+# Copyright (c) 2025-2026, Nepher Robotics
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+"""Play variant of the end-to-end baseline environment config."""
+
 from isaaclab.utils import configclass
 
 from .cube_stack_env_cfg import OpenArmCubeStackEnvCfg

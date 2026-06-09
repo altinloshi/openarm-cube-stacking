@@ -1,3 +1,8 @@
+# Copyright (c) 2025-2026, Nepher Robotics
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 """RSL-RL runner config for HL environments.
 
 The HL play/eval environments load the FROZEN LL policy, so the

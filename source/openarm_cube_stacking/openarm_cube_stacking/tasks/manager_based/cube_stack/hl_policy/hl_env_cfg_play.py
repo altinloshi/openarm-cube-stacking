@@ -1,3 +1,8 @@
+# Copyright (c) 2025-2026, Nepher Robotics
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Play variant for Nepher-OpenArm-CubeStack-HL-Classical-Play-v0."""
 
 from isaaclab.utils import configclass

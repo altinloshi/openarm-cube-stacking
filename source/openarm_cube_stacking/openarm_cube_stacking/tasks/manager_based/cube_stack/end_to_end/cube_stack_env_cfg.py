@@ -1,3 +1,8 @@
+# Copyright (c) 2025-2026, Nepher Robotics
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 """End-to-end environment config for Nepher-OpenArm-CubeStack-EndToEnd-v0.
 
 This is the same lift-style baseline as the top-level cube_stack task, exposed
